@@ -1,33 +1,21 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import {Service} from "./types.ts";
+import ServiceCard from "./components/blocks/ServiceCard.tsx"
+
+function get_services():Array<Service>{
+    return [
+        {id:0,type:"test",category:"Test Category",group:"Students for poorly tested software",description:"This is a service"},
+        {id:1,type:"test2",category:"Test Category 2",group:"Students for well tested software",description:"This is not a service"},
+        {id:2,type:"test3",category:"Test Category 3",group:"Students for mediocrily tested software",description:"This might be a service"}
+    ]
+}
+
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>WELCOME TO MINUTEMATCH</h1>
+        {get_services().map((service:Service)=>(<ServiceCard key={service.id} service={service}/>))}
     </>
   )
 }
