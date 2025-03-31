@@ -1,11 +1,16 @@
-import React from 'react';
+import {useState} from 'react';
 import "./Navbar.css"
 import {Link} from 'react-router-dom';
 
 const Navbar=()=>{
+    const [curPage,updateCurPage] = useState<number>(0)
+    const navbarInfo = [
+        {route:"/",text:"View"},
+        {route:"/post-service",text:"Post Service"},
+        {route:"/request",text:"Request Service"}
+    ]
     return (<>
-        <Link to="/" className="navbar-item">View</Link>
-        <Link to="/post-service" className="navbar-item">Post Service</Link>
+            {navbarInfo.map((item,index)=>(curPage!=index)?<Link to={item.route} className="navbar-item" key={index} onClick={()=>updateCurPage(index)}>{item.text}</Link>:<Link to={item.route} className="navbar-item-highlight" key={index} onClick={()=>updateCurPage(index)}>{item.text}</Link>)}
         </>
     )
 
