@@ -1,0 +1,9 @@
+.navbar-item{
+    margin-right: 1rem;
+    border-bottom: 3px solid cornflowerblue;
+}
+.navbar-item-highlight{
+    margin-right: 1rem;
+    color:white;
+    border-bottom: 3px solid white;
+}
