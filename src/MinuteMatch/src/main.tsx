@@ -6,13 +6,13 @@ import Navbar from "./components/Navbar.tsx";
 import PostService from "./PostService.tsx"
 import RequestService from "./RequestService.tsx";
 
+
 const root = document.getElementById("root");
 createRoot(root!).render(
     <>
     <BrowserRouter>
     <Navbar />
     <div>
-
         <Routes>
             <Route path="/" element={<App />} />
             <Route path="/post-service" element={<PostService/>}/>
