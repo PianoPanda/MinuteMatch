@@ -1,8 +1,16 @@
-interface Service{id:number;
+interface Service{
+id:number;
 type:string;
 category:string;
 group:string;
+user:User
 description:string;
+picture:string;
 }
 
-export type {Service}
+interface User{
+    id:number;
+    name:string;
+}
+
+export type {Service,User}

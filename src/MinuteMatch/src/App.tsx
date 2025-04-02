@@ -4,9 +4,9 @@ import ServiceCard from "./components/blocks/ServiceCard.tsx"
 
 function get_services():Array<Service>{
     return [
-        {id:0,type:"test",category:"Test Category",group:"Students for poorly tested software",description:"This is a service"},
-        {id:1,type:"test2",category:"Test Category 2",group:"Students for well tested software",description:"This is not a service"},
-        {id:2,type:"test3",category:"Test Category 3",group:"Students for mediocrily tested software",description:"This might be a service"}
+        {id:0,type:"test",category:"Test Category",group:"Students for poorly tested software",description:"This is a service",user:{id:0,name:"Timmald"}},
+        {id:1,type:"test2",category:"Test Category 2",group:"Students for well tested software",description:"This is not a service",user:{id:0,name:"Timmald"}},
+        {id:2,type:"test3",category:"Test Category 3",group:"Students for mediocrily tested software",description:"This might be a service",user:{id:0,name:"Timmald"}}
     ]
 }
 
