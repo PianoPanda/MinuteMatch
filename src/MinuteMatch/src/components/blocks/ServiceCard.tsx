@@ -2,6 +2,7 @@ import {Service} from "../../types.ts";
 import "./ServiceCard.css";
 //TODO: Test picture
 function ServiceCard({service}:{service:Service}) {
+    console.log(service);
     return(<div className="service-card">
         <h3>{service.type}</h3>
         {!service.picture?<p></p>:<img src={service.picture} alt="service-image"/>}
