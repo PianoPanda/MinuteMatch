@@ -7,7 +7,7 @@ On github UI, create pull request, assign reviewer, create
 
 to review: open pull request, click files, approve changes(approve selection must be clicked iin check marks below), finally approve
 
-## innstall into set uo
+## install into set up
 
 To run any code we need to cd src/MinuteMatch/src
 
@@ -19,8 +19,14 @@ To run any code we need to cd src/MinuteMatch/src
 
 to run code npm run dev in one terminal and node DB.js to run the server
 
+## implementing a postgreSQL password
+use Bacon85! when setting up postgreSQL
+
+
 ## Database outline 
 Names for databases:
+
+
 Make a new server named MinuteMatch and then use the Bacon85! for the password of your postgress when setting up
 - make sure to download all these set ups and then 
 
@@ -68,3 +74,5 @@ CREATE TABLE "user" (
     Last_active TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,    -- Timestamp for last activity, default is current timestamp
     Flagged BOOLEAN DEFAULT FALSE                        -- Flagged as a boolean (default is FALSE)
 );
+
+You can add filler dummy data to work on the testing and getting of the data
