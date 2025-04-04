@@ -171,8 +171,7 @@ const PostService: React.FC = () => {
                 </div>
             </form>
         </div>
-    );
-    
+    );   
 };
 
 export default PostService;
