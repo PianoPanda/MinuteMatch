@@ -33,8 +33,12 @@ To run any code we need to cd src/MinuteMatch/src
 - npm install express pg
 - installed Dompurify
 
+to run code npm run dev in one terminal and node DB.js to run the server
+
 ## Database outline 
 Names for databases:
+Make a new server named MinuteMatch and then use the Bacon85! for the password of your postgress when setting up
+- make sure to download all these set ups and then 
 
 categories
 CREATE TABLE categories (
