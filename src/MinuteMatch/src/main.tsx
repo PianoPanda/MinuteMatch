@@ -1,3 +1,5 @@
+
+import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from "react-router";
 import './index.css'
@@ -5,7 +7,6 @@ import App from './App.tsx'
 import Navbar from "./components/Navbar.tsx";
 import PostService from "./PostService.tsx"
 import RequestService from "./RequestService.tsx";
-
 
 const root = document.getElementById("root");
 createRoot(root!).render(
