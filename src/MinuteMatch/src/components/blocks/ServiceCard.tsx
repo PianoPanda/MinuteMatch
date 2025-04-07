@@ -1,10 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { Service } from "../../types"; // adjust the path as needed
 import "./ServiceCard.css";
 import { JSX } from "react/jsx-runtime";
 
+interface Comment {
+    text: string;
+    timestamp: string;
+}
+
 function ServiceCard({ service }: { service: Service }): JSX.Element {
+    const [comment, setComment] = useState("");
+    const [comments, setComments] = useState<Comment[]>([]);
+
+    const handleAddComment = () => {
+        if (comment.trim() === "") return; // skip empty comments
+
+        console.log("New comment:", comment);
+        const timestamp = new Date().toLocaleString();
+        let comment_yay: Comment = {
+            text: comment,
+            timestamp: timestamp,
+          };
+        const newComment: Comment = comment_yay;
+
+        setComments([...comments, newComment]); // add new comment to list
+        setComment(""); // reset textarea
+    };
+
     return (
         <div className="service-card">
             <h3>{service.ServiceType ? 'Service Post' : 'General Post'}</h3>
@@ -30,19 +53,23 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
                 <p><i>Categories: {service.category.join(', ')}</i></p>
             )}
             <p>{service.description}</p>
-            <p><i>Posted on: {new Date(service.timestamp).toLocaleString()}</i></p>
-            {service.postComments && service.postComments.length > 0 && (
-                <div className="comments">
-                    {service.postComments.map((comment, index) => (
-                        <div key={index} className="comment">
-                            <p>{comment}</p>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <p><i>Posted on: {new Date(service.timestamp).toLocaleString()}</i></p> {/*'Posted on' label*/}
 
-            <textarea placeholder="Add a comment..." />
-            <button>Add Comment</button>
+            {/* Display the comments that have been posted to a post */}
+            {comments.map((c, index) => (
+                <div key={index} className="comment">
+                    <p>{c.text}</p>
+                    <p>{c.timestamp}</p>
+                </div>
+            ))}
+
+            {/* 'Add comment' button triggers the setComment function call */}
+            <textarea
+                placeholder="Add a comment..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+            />
+            <button onClick={handleAddComment}>Add Comment</button>
         </div>
     );
 }
