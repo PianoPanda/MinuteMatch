@@ -1,6 +1,7 @@
 import express from 'express';
 import pkg from 'pg';
 import cors from 'cors';
+import {orm_service} from "./ORM.js";
 import multer from 'multer';  // for the file uploads
 
 const { Pool } = pkg;
@@ -42,6 +43,18 @@ pool.connect()
     .then(() => console.log('Connected to PostgreSQL'))
     .catch((err) => console.error('PostgreSQL connection error:', err));
 
+async function get_user_by_id(id) {
+    let client;
+    try{
+        client = await pool.connect();
+        const result = await client.query("SELECT * FROM users WHERE id = $1", [id]);
+        return result.rows[0];
+    }
+    catch(err){
+        console.error('Error fetching user:', err);
+        return null;
+    }
+}
 // **Fetch Groups**
 app.get('/group', async (req, res) => {
     let client;
