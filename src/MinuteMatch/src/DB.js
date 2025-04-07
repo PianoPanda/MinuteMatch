@@ -110,7 +110,20 @@ app.get('/api/posts', async (req, res) => {
     } catch (error) {
         console.error('Error retrieving posts:', error);
         res.status(500).json({ error: 'Failed to retrieve posts' });
-    }
+    //     client = await pool.connect();
+    //     const checkDuplicates = await client.query('SELECT * FROM "group" WHERE groupname = $1', [groupName]);
+    //     if (checkDuplicates.rows.length > 0) {
+    //         return res.status(400).json({ message: `Group ${groupName} already exists` });
+    //     }
+
+    //     await client.query('INSERT INTO "group" (groupname) VALUES ($1)', [groupName]);
+    //     res.status(201).json({ message: `Group ${groupName} added successfully` });
+    // } catch (err) {
+    //     console.error('Error adding group:', err);
+    //     res.status(500).json({ message: 'Error adding group' });
+    // } finally {
+    //     if (client) client.release();
+     }
 });
 
 
