@@ -73,29 +73,33 @@ app.get('/categories', async (req, res) => {
 });
 
 // **Add a Group**
-app.post('/group', async (req, res) => {
-    const { groupName } = req.body;
-    if (!groupName) {
-        return res.status(400).json({ message: 'Group name is required' });
-    }
-
-    let client;
+app.get('/api/posts', async (req, res) => {
     try {
-        client = await pool.connect();
-        const checkDuplicates = await client.query('SELECT * FROM "group" WHERE groupname = $1', [groupName]);
-        if (checkDuplicates.rows.length > 0) {
-            return res.status(400).json({ message: `Group ${groupName} already exists` });
-        }
-
-        await client.query('INSERT INTO "group" (groupname) VALUES ($1)', [groupName]);
-        res.status(201).json({ message: `Group ${groupName} added successfully` });
-    } catch (err) {
-        console.error('Error adding group:', err);
-        res.status(500).json({ message: 'Error adding group' });
-    } finally {
-        if (client) client.release();
+        const result = await pool.query('SELECT * FROM Posts');
+        // Map each post, converting Picture (BYTEA) to a Base64 string if present
+        const posts = result.rows.map(post => ({
+            id: post.PostID,
+            ServiceType: post.ServiceType,
+            picture: post.Picture
+              ? `data:application/octet-stream;base64,${post.Picture.toString('base64')}`
+              : null,
+            user: {
+                id: post.UserID,
+                name: "Unknown User" // Adjust if you join with a users table
+            },
+            group: post.groupID ? `Group ${post.groupID}` : null,
+            category: post.category || [],
+            description: post.Text || "No description available",
+            postComments: post.PostComments || [],
+            timestamp: post.TimeStamp,
+        }));
+        res.json(posts);
+    } catch (error) {
+        console.error('Error retrieving posts:', error);
+        res.status(500).json({ error: 'Failed to retrieve posts' });
     }
 });
+
 
 // **Add a Category**
 app.post('/categories', async (req, res) => {
