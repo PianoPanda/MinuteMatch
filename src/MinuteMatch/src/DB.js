@@ -1,6 +1,8 @@
 import express from 'express';
 import pkg from 'pg';
 import cors from 'cors';
+import {orm_service} from "./ORM.js";
+
 
 const { Pool } = pkg;
 
@@ -24,6 +26,18 @@ pool.connect()
     .then(() => console.log('Connected to PostgreSQL'))
     .catch((err) => console.error('PostgreSQL connection error:', err));
 
+async function get_user_by_id(id) {
+    let client;
+    try{
+        client = await pool.connect();
+        const result = await client.query("SELECT * FROM users WHERE id = $1", [id]);
+        return result.rows[0];
+    }
+    catch(err){
+        console.error('Error fetching user:', err);
+        return null;
+    }
+}
 // **Fetch Groups**
 app.get('/group', async (req, res) => {
     let client;
@@ -133,9 +147,17 @@ app.get('/api/posts', async (req, res) => {
         
         // Execute the query
         const result = await pool.query(query); // Use pool.query instead of client.query
-        
+
+        function orm_service(service){
+            service.user = get_user_by_id(service.userid);
+            service.group = get_group_by_id(service.groupid);
+            service.categories = service.category.map(get_category_by_id);
+            service.helpers = service.helperlist.map(get_user_by_id);
+        }
+
+
         // Return the posts data to the client
-        res.status(200).json(result.rows);  // Send all posts as a JSON response
+        res.status(200).json(result.rows.map(orm_service));  // Send all posts as a JSON response
     } catch (error) {
         console.error('Error fetching posts:', error);
         res.status(500).json({ error: 'Failed to fetch posts' });
