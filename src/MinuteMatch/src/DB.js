@@ -404,17 +404,22 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
 
 app.get('/posts', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM posts');
+        // Query to select all posts from the database
+        const query = 'SELECT * FROM posts';
+        
+        // Execute the query
+        const result = await pool.query(query); // Use pool.query instead of client.query
 
-        // Convert the bytea (binary data) to base64 so frontend can use it
-        const posts = result.rows.map(post => ({
-            ...post,
-            picture: post.picture
-                ? `data:application/octet-stream;base64,${post.picture.toString('base64')}`
-                : null
-        }));
+        function orm_service(service){
+            service.user = get_user_by_id(service.userid);
+            service.group = get_group_by_id(service.groupid);
+            service.categories = service.category.map(get_category_by_id);
+            service.helpers = service.helperlist.map(get_user_by_id);
+        }
 
-        res.status(200).json(posts);
+
+        // Return the posts data to the client
+        res.status(200).json(result.rows.map(orm_service));  // Send all posts as a JSON response
     } catch (error) {
         console.error('Error retrieving posts:', error);
         res.status(500).json({ error: 'Failed to fetch posts' });
