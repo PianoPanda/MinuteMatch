@@ -19,7 +19,7 @@ function App() {
                     ServiceType: post.servicetype,
                     picture: post.picture, // already a Base64 string if present
                     user: {
-                        id: post.userid,
+                        id: post.userid || 'N/A', //todo User id has not been made yet so defualt null
                         //name: post.user?.name || "Unknown User",
                     },
                     group: post.groupid || null, //todo: this is not going to be a null
@@ -43,7 +43,7 @@ function App() {
         <div className="App">
             <h1>WELCOME TO MINUTEMATCH</h1>
             {services.length > 0 ? (
-                services.map((service) => (
+                services.reverse().map((service) => (
                     <ServiceCard key={service.id} service={service} />
                 ))
             ) : (

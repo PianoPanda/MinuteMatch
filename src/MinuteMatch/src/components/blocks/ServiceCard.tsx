@@ -13,13 +13,18 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
             {service.picture ? (
                 service.picture.startsWith("data:application")
                 ? <img src={service.picture} alt="service" style={{ width: "200px" }} />
-                : <iframe src={service.picture} width="400" height="500" title="file-view" />
+                : <>
+                <iframe src={service.picture} width="400" height="500" title="file-view" />
+                {console.log('\n')}
+                </>
             ) : (
                 console.log(`${service.picture}`),
+                console.log(`${service.user.id}`),
+                console.log(`${service.user}`),
                 <p>No picture available</p>
             )}
 
-            <i>Posted by: <b>{service.user.name}</b></i>
+            <i>Posted by: <b>{service.user.id}</b></i>
             {service.groupId && <p><i>Group: {service.groupId}</i></p>}
             {service.category && service.category.length > 0 && (
                 <p><i>Categories: {service.category.join(', ')}</i></p>
