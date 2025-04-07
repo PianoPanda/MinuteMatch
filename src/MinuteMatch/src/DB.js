@@ -43,7 +43,7 @@ pool.connect()
     .catch((err) => console.error('PostgreSQL connection error:', err));
 
 // **Fetch Groups**
-app.get('/group', async (res) => {
+app.get('/group', async (req, res) => {
     let client;
     try {
         client = await pool.connect();
