@@ -76,3 +76,9 @@ CREATE TABLE "user" (
 );
 
 You can add filler dummy data to work on the testing and getting of the data
+
+LAST RESORT: 
+Merges poconnor into your current branch (sgzhang).
+If any files conflict, Git will automatically resolve the conflict by keeping poconnor's version (-X theirs).
+`git checkout sgzhang`
+`git merge -s recursive -X theirs origin/poconnor`

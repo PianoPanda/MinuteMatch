@@ -1,37 +1,56 @@
-import './App.css'
-import {Service} from "./types.ts";
-import ServiceCard from "./components/blocks/ServiceCard.tsx"
+// App.tsx
+import React, { useEffect, useState } from "react";
+import "./App.css";
+import { Service } from "./types";
+import ServiceCard from "./components/blocks/ServiceCard";
 import axios from "axios";
-import {useEffect,useState} from "react";
-
-/*function get_services():Array<Service>{
-    return [
-        {id:0,type:"test",category:"Test Category",group:"Students for poorly tested software",description:"This is a service",user:{id:0,name:"Timmald"}},
-        {id:1,type:"test2",category:"Test Category 2",group:"Students for well tested software",description:"This is not a service",user:{id:0,name:"Timmald"}},
-        {id:2,type:"test3",category:"Test Category 3",group:"Students for mediocrily tested software",description:"This might be a service",user:{id:0,name:"Timmald"}}
-    ]
-}*/
-
-
-
 
 function App() {
-    const [services,setServices] = useState<Array<Service>>([]);
-    useEffect(()=>{
-        const fetch_services = async ()=>{
-            const response = await axios.get("http://localhost:3000/api/posts");
-            setServices(response.data);
-        }
-        fetch_services();
-        console.log(services);
-    })
+    const [services, setServices] = useState<Service[]>([]);
 
-  return (
-    <>
-      <h1>WELCOME TO MINUTEMATCH</h1>
-        {services.map((service:Service)=>(<ServiceCard key={service.id} service={service}/>))}
-    </>
-  )
+    useEffect(() => {
+        const fetch_services = async () => {
+            try {
+                const response = await axios.get("http://localhost:3000/posts");
+                // Map response data to match the Service type
+                console.log(`${response.data}`)
+                const cleanedData = response.data.map((post: any) => ({
+                    id: post.postid,
+                    ServiceType: post.servicetype,
+                    picture: post.picture, // already a Base64 string if present
+                    user: {
+                        id: post.userid || 'N/A', //todo User id has not been made yet so defualt null
+                        //name: post.user?.name || "Unknown User",
+                    },
+                    group: post.groupid || null, //todo: this is not going to be a null
+                    category: post.category || [],
+                    description: post.text || "No description available",
+                    postComments: post.postcomments || [], //todo; may not need the empty array for the implementation of the service card, can be removed if not needed
+                    timestamp: post.timestamp,
+                }));
+                console.log(`${cleanedData.length} services fetched from the API`);
+                console.log(`${cleanedData.description} what is the data being inputed `)
+                setServices(cleanedData);
+            } catch (error) {
+                console.error("Error fetching services:", error);
+            }
+        };
+
+        fetch_services();
+    }, []);
+
+    return (
+        <div className="App">
+            <h1>WELCOME TO MINUTEMATCH</h1>
+            {services.length > 0 ? (
+                services.reverse().map((service) => (
+                    <ServiceCard key={service.id} service={service} />
+                ))
+            ) : (
+                <p>Loading services...</p>
+            )}
+        </div>
+    );
 }
 
-export default App
+export default App;

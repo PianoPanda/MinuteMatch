@@ -1,16 +1,14 @@
-interface Service{
-id:number;
-type:string;
-category:string;
-group:string;
-user:User
-description:string;
-picture:string;
+export interface Service {
+    id: number;
+    ServiceType: boolean;
+    picture: string | null;
+    user: {
+        id: number;
+        //name: string; //todo may need to update the 
+    };
+    groupId: number | null;
+    category: string[];
+    description: string;
+    postComments: string[];
+    timestamp: string;
 }
-
-interface User{
-    id:number;
-    name:string;
-}
-
-export type {Service,User}
