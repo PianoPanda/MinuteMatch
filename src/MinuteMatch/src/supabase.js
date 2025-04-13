@@ -134,7 +134,8 @@ app.post('/categories', async (req, res) => {
 
 // **Add a Post**
 app.post('/posts', upload.single('picture'), async (req, res) => {
-        const { service, category, description } = req.body;
+        const { service, category, description, group} = req.body;
+        console.log(req.body);
         const picture = req.file ? req.file.buffer.toString("base64") : null; // <-- This is the fix: use the buffer instead of path
         console.log(picture);
         if (!service) {
@@ -148,10 +149,14 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
         }
 
         const categoryArray = Array.isArray(category) ? category : [category];
-
+        const groupID = group?await supabase
+            .from("group")
+            .select("groupid")
+            .eq("groupname",group).limit(1).single():null;
+        console.log(groupID);
         let {data:result,error} = await supabase
         .from('posts')
-        .insert({servicetype:service,text:description,picture:picture})
+        .insert({servicetype:service,text:description,picture:picture,groupid:groupID?groupID.data.groupid:null})
         .select();
         if (error){
             console.error('Error inserting post:', error);
@@ -170,9 +175,7 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
     if(error3){
         console.error('Error finding post category:', error);
     }
-    console.log(result)
     let catID=catIDArr[0].id;
-    console.log({post_id:result[0].postid,category_id:catID})
 
     let {error2} = await supabase.from("post_categories")
         .insert({post_id:result[0].postid,category_id:catID})
