@@ -151,7 +151,7 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
 
         let {data:result,error} = await supabase
         .from('posts')
-        .insert({servicetype:service,category:categoryArray,text:description,picture:picture})
+        .insert({servicetype:service,text:description,picture:picture})
         .select();
         if (error){
             console.error('Error inserting post:', error);
@@ -162,7 +162,24 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
 
             res.status(500).json({ error: 'Failed to add post' });
         }
-        res.status(201).json(result[0]);
+    let {data: catIDArr,error3} = await supabase
+        .from('categories')
+        .select("id")
+        .eq("name",category.slice(1,-1))
+        .limit(1);
+    if(error3){
+        console.error('Error finding post category:', error);
+    }
+    console.log(result)
+    let catID=catIDArr[0].id;
+    console.log({post_id:result[0].postid,category_id:catID})
+
+    let {error2} = await supabase.from("post_categories")
+        .insert({post_id:result[0].postid,category_id:catID})
+    if(error2){console.error("Error submitting post category:", error);}
+
+
+    res.status(201).json(result[0]);
 });
 
 // **Get Posts**
@@ -180,23 +197,29 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
 app.get('/posts', async (req, res) => {
         let{data:result,error} = await supabase
         .from('posts')
-        .select("*");
+        .select("*, post_categories (category_id:categories (*))");
         if(error){
             console.error('Error retrieving posts:', error);
             res.status(500).json({ error: 'Failed to fetch posts' });
         }
+        console.log(result);
         // Convert the bytea (binary data) to base64 so frontend can use it
         const posts = result.map(post => {
             let base64;
+            console.log(post.post_categories[0])
             if(post.picture) {
-                console.log(/^[0-9a-fA-F]+$/.test(post.picture.slice(2)));
-                console.log(post.picture.slice(0, 20));
-                console.log(Buffer.from(post.picture.slice(2), "base64"))//TODO: IT IS LOGGING THE HEX BYTES FOR BASE64 FOR A PDF
+                //console.log(/^[0-9a-fA-F]+$/.test(post.picture.slice(2)));
+                //console.log(post.picture.slice(0, 20));
+                //console.log(Buffer.from(post.picture.slice(2), "base64"))//TODO: IT IS LOGGING THE HEX BYTES FOR BASE64 FOR A PDF
             }
             base64 = post.picture ? Buffer.from(post.picture, "base64").toString("base64") : null;
-            if(post.picture){console.log(base64.slice(0,50));}//TODO: the buffer is GETTING WRITTEN IN AS A JSON STRING BRUH FIX THIS
+            //if(post.picture){console.log(base64.slice(0,50));}//TODO: the buffer is GETTING WRITTEN IN AS A JSON STRING BRUH FIX THIS
+            let catArr = post.post_categories.map(postcat => {
+                return postcat.category_id.name;
+            })
             return {...
                 post,
+                category:catArr,
                     picture
             :
                 post.picture
@@ -204,7 +227,7 @@ app.get('/posts', async (req, res) => {
                     : null
             }
         });
-        console.log(posts);
+        //console.log(posts);
         res.status(200).json(posts);
 });
 
