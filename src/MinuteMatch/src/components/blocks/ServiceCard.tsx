@@ -18,13 +18,14 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
 
         console.log("New comment:", comment);
         const timestamp = new Date().toLocaleString();
-        let comment_yay: Comment = {
+        const comment_yay: Comment = {
             text: comment,
             timestamp: timestamp,
           };
         const newComment: Comment = comment_yay;
 
         setComments([...comments, newComment]); // add new comment to list
+        //TODO: Comments don't update database
         setComment(""); // reset textarea
     };
 
