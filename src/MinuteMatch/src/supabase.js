@@ -265,7 +265,9 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
     if(error3){
         console.error('Error finding post category:', error);
     }
+    console.log(result)
     let catID=catIDArr[0].id;
+    console.log({post_id:result[0].postid,category_id:catID})
 
     let {error2} = await supabase.from("post_categories")
         .insert({post_id:result[0].postid,category_id:catID})
