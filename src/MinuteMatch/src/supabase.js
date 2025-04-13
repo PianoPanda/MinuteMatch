@@ -422,6 +422,39 @@ app.get('/posts', async (req, res) => {
         //console.log(posts);
         res.status(200).json(posts);
 });
+// app.get('/posts', async (req, res) => {
+//     const { groupId } = req.query;
+
+//     let query = supabase
+//         .from('posts')
+//         .select("*, post_categories (category_id:categories (*))");
+
+//     if (groupId) {
+//         query = query.eq("groupid", groupId);
+//     }
+
+//     const { data: result, error } = await query;
+
+//     if (error) {
+//         console.error('Error retrieving posts:', error);
+//         return res.status(500).json({ error: 'Failed to fetch posts' });
+//     }
+
+//     const posts = result.map(post => {
+//         const base64 = post.picture ? Buffer.from(post.picture, "base64").toString("base64") : null;
+//         const catArr = post.post_categories.map(postcat => postcat.category_id.name);
+
+//         return {
+//             ...post,
+//             category: catArr,
+//             picture: post.picture
+//                 ? `data:application/octet-stream;base64,${base64}`
+//                 : null
+//         };
+//     });
+
+//     res.status(200).json(posts);
+// });
 
 
 // Required to resolve __dirname in ES modules
