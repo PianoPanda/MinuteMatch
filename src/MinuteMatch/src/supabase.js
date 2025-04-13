@@ -88,6 +88,20 @@ app.get('/api/posts', async (req, res) => {
             timestamp: post.TimeStamp,
         }));
         res.json(posts);
+
+    //     client = await pool.connect();
+    //     const checkDuplicates = await client.query('SELECT * FROM "group" WHERE groupname = $1', [groupName]);
+    //     if (checkDuplicates.rows.length > 0) {
+    //         return res.status(400).json({ message: `Group ${groupName} already exists` });
+    //     }
+
+    //     await client.query('INSERT INTO "group" (groupname) VALUES ($1)', [groupName]);
+    //     res.status(201).json({ message: `Group ${groupName} added successfully` });
+    // } catch (err) {
+    //     console.error('Error adding group:', err);
+    //     res.status(500).json({ message: 'Error adding group' });
+    // } finally {
+    //     if (client) client.release();
     });
 
 
@@ -232,7 +246,7 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
         console.log(groupID);
         let {data:result,error} = await supabase
         .from('posts')
-        .insert({servicetype:service,text:description,picture:picture,groupid:groupID?groupID.data.groupid:null})
+        .insert({servicetype:service,category:categoryArray,text:description,picture:picture,groupid:groupID?groupID.data.groupid:null})
         .select();
         if (error){
             console.error('Error inserting post:', error);
@@ -263,38 +277,68 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
 
 // **Get Posts**
 app.get('/posts', async (req, res) => {
-    const { groupId } = req.query;
-
-    let query = supabase
-        .from('posts')
-        .select("*, post_categories (category_id:categories (*))");
-
-    if (groupId) {
-        query = query.eq("groupid", groupId);
-    }
-
-    const { data: result, error } = await query;
-
-    if (error) {
+    let{data:result,error} = await supabase
+    .from('posts')
+    .select("*");
+    if(error){
         console.error('Error retrieving posts:', error);
-        return res.status(500).json({ error: 'Failed to fetch posts' });
+        res.status(500).json({ error: 'Failed to fetch posts' });
     }
-
+    // Convert the bytea (binary data) to base64 so frontend can use it
     const posts = result.map(post => {
-        const base64 = post.picture ? Buffer.from(post.picture, "base64").toString("base64") : null;
-        const catArr = post.post_categories.map(postcat => postcat.category_id.name);
-
-        return {
-            ...post,
-            category: catArr,
-            picture: post.picture
+        let base64;
+        if(post.picture) {
+            console.log(/^[0-9a-fA-F]+$/.test(post.picture.slice(2)));
+            console.log(post.picture.slice(0, 20));
+            console.log(Buffer.from(post.picture.slice(2), "base64"))//TODO: IT IS LOGGING THE HEX BYTES FOR BASE64 FOR A PDF
+        }
+        base64 = post.picture ? Buffer.from(post.picture, "base64").toString("base64") : null;
+        if(post.picture){console.log(base64.slice(0,50));}//TODO: the buffer is GETTING WRITTEN IN AS A JSON STRING BRUH FIX THIS
+        return {...
+            post,
+                picture
+        :
+            post.picture
                 ? `data:application/octet-stream;base64,${base64}`
                 : null
-        };
+        }
     });
-
+    console.log(posts);
     res.status(200).json(posts);
 });
+// app.get('/posts', async (req, res) => {
+//     const { groupId } = req.query;
+
+//     let query = supabase
+//         .from('posts')
+//         .select("*, post_categories (category_id:categories (*))");
+
+//     if (groupId) {
+//         query = query.eq("groupid", groupId);
+//     }
+
+//     const { data: result, error } = await query;
+
+//     if (error) {
+//         console.error('Error retrieving posts:', error);
+//         return res.status(500).json({ error: 'Failed to fetch posts' });
+//     }
+
+//     const posts = result.map(post => {
+//         const base64 = post.picture ? Buffer.from(post.picture, "base64").toString("base64") : null;
+//         const catArr = post.post_categories.map(postcat => postcat.category_id.name);
+
+//         return {
+//             ...post,
+//             category: catArr,
+//             picture: post.picture
+//                 ? `data:application/octet-stream;base64,${base64}`
+//                 : null
+//         };
+//     });
+
+//     res.status(200).json(posts);
+// });
 
 
 // Required to resolve __dirname in ES modules
