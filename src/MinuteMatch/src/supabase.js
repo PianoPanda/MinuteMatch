@@ -1,9 +1,13 @@
 import express from 'express';
-import pkg from 'pg';
 import cors from 'cors';
 import multer from 'multer';  // for the file uploads
 
-const { Pool } = pkg;
+
+
+import { createClient } from '@supabase/supabase-js'
+const supabaseUrl = 'https://swzbqpnkyetlzdovujon.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Initialize Express
 const app = express();
@@ -28,56 +32,45 @@ const upload = multer({
 });
 
 
-// PostgreSQL Connection
-const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'postgres', // Ensure this is the correct database name
-    password: 'Bacon85!',
-    port: 5432,
-});
-
-// Check Database Connection
-pool.connect()
-    .then(() => console.log('Connected to PostgreSQL'))
-    .catch((err) => console.error('PostgreSQL connection error:', err));
-
 // **Fetch Groups**
 app.get('/group', async (req, res) => {
-    let client;
-    try {
-        client = await pool.connect();
-        const result = await client.query('SELECT "groupname" FROM "group"'); // Ensure table name is correct
-        res.json(result.rows);
-    } catch (err) {
-        console.error('Error fetching groups:', err);
+
+    let { data: group, error } = await supabase
+        .from('group')
+        .select('groupname');//list of objects with groupname attr
+    if (error){
+        console.error('Error fetching groups:', error);
         res.status(500).json({ message: 'Error fetching group' });
-    } finally {
-        if (client) client.release();
+        return;
     }
+    res.json(group);
 });
 
 // **Fetch Categories**
 app.get('/categories', async (req, res) => {
-    try {
         console.log("Do we even reach the back end to get to the fetch function!!!!!!");
-        const result = await pool.query('SELECT "name" from "categories"');
-
-        const categories = result.rows.map(row => row.name);
-
+        let {data:catNames,error} = await supabase
+            .from("categories")
+            .select("name")
+        if(error){
+            console.error(error);
+            res.status(500).json({ error: 'Database error' });
+        }
+        const categories = catNames.map(row => row.name);
         res.json(categories);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Database error' });
-    }
 });
 
 // **Add a Group**
 app.get('/api/posts', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM Posts');
+        let {data:result,error} = await supabase
+            .from('posts')
+            .select("*");
+        if (error){
+            console.error('Error retrieving posts:', error);
+            res.status(500).json({ error: 'Failed to retrieve posts' });
+        }
         // Map each post, converting Picture (BYTEA) to a Base64 string if present
-        const posts = result.rows.map(post => ({
+        const posts = result.map(post => ({
             id: post.PostID,
             ServiceType: post.ServiceType,
             picture: post.Picture
@@ -94,9 +87,7 @@ app.get('/api/posts', async (req, res) => {
             timestamp: post.TimeStamp,
         }));
         res.json(posts);
-    } catch (error) {
-        console.error('Error retrieving posts:', error);
-        res.status(500).json({ error: 'Failed to retrieve posts' });
+
     //     client = await pool.connect();
     //     const checkDuplicates = await client.query('SELECT * FROM "group" WHERE groupname = $1', [groupName]);
     //     if (checkDuplicates.rows.length > 0) {
@@ -110,8 +101,7 @@ app.get('/api/posts', async (req, res) => {
     //     res.status(500).json({ message: 'Error adding group' });
     // } finally {
     //     if (client) client.release();
-     }
-});
+    });
 
 
 // **Add a Category**
@@ -120,31 +110,33 @@ app.post('/categories', async (req, res) => {
     if (!categoryName) {
         return res.status(400).json({ message: 'Category name is required' });
     }
-
-    let client;
-    try {
-        client = await pool.connect();
-        const checkDuplicates = await client.query('SELECT * FROM categories WHERE name = $1', [categoryName]);
-        if (checkDuplicates.rows.length > 0) {
-            return res.status(400).json({ message: `Category ${categoryName} already exists` });
-        }
-
-        await client.query('INSERT INTO categories (name) VALUES ($1)', [categoryName]);
-        res.status(201).json({ message: `Category ${categoryName} added successfully` });
-    } catch (err) {
+    let {data:checkDuplicates,error} = await supabase
+    .from('categories')
+    .select("*")
+    .eq("name",categoryName);
+    if (error){
         console.error('Error adding category:', err);
         res.status(500).json({ message: 'Error adding category' });
-    } finally {
-        if (client) client.release();
     }
+    if (checkDuplicates.rows.length > 0) {
+        return res.status(400).json({ message: `Category ${categoryName} already exists` });
+    }
+    let {error2} = await supabase
+        .from('categories')
+        .insert({name:categoryName});
+    if (error2){
+        res.status(500).json({message:"Error adding category"});
+        console.error('Error adding category:', error);
+    }
+    res.status(201).json({ message: `Category ${categoryName} added successfully` });
+
 });
 
 // **Add a Post**
 app.post('/posts', upload.single('picture'), async (req, res) => {
-    try {
         const { service, category, description } = req.body;
-        const picture = req.file ? req.file.buffer : null; // <-- This is the fix: use the buffer instead of path
-
+        const picture = req.file ? req.file.buffer.toString("base64") : null; // <-- This is the fix: use the buffer instead of path
+        console.log(picture);
         if (!service) {
             return res.status(400).json({ error: 'Service type is required' });
         }
@@ -157,21 +149,20 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
 
         const categoryArray = Array.isArray(category) ? category : [category];
 
-        const query = 'INSERT INTO "posts"("servicetype", "category", "text", "picture") VALUES($1, $2, $3, $4) RETURNING *';
-        const values = [service, categoryArray, description, picture]; // <-- Sending the picture as binary data
+        let {data:result,error} = await supabase
+        .from('posts')
+        .insert({servicetype:service,category:categoryArray,text:description,picture:picture})
+        .select();
+        if (error){
+            console.error('Error inserting post:', error);
 
-        const result = await pool.query(query, values);
+            if (error instanceof multer.MulterError) {
+                return res.status(400).json({ error: error.message });
+            }
 
-        res.status(201).json(result.rows[0]);
-    } catch (error) {
-        console.error('Error inserting post:', error);
-
-        if (error instanceof multer.MulterError) {
-            return res.status(400).json({ error: error.message });
+            res.status(500).json({ error: 'Failed to add post' });
         }
-
-        res.status(500).json({ error: 'Failed to add post' });
-    }
+        res.status(201).json(result[0]);
 });
 
 // **Get Posts**
@@ -187,26 +178,34 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
 // });
 
 app.get('/posts', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM posts');
-        result.rows.map(post => {
-            if(post.picture){
-                console.log(post.picture.toString("base64").slice(0,20));
-            }
-        })
+        let{data:result,error} = await supabase
+        .from('posts')
+        .select("*");
+        if(error){
+            console.error('Error retrieving posts:', error);
+            res.status(500).json({ error: 'Failed to fetch posts' });
+        }
         // Convert the bytea (binary data) to base64 so frontend can use it
-        const posts = result.rows.map(post => ({
-            ...post,
-            picture: post.picture
-                ? `data:application/octet-stream;base64,${post.picture.toString('base64')}`
-                : null
-        }));
-
+        const posts = result.map(post => {
+            let base64;
+            if(post.picture) {
+                console.log(/^[0-9a-fA-F]+$/.test(post.picture.slice(2)));
+                console.log(post.picture.slice(0, 20));
+                console.log(Buffer.from(post.picture.slice(2), "base64"))//TODO: IT IS LOGGING THE HEX BYTES FOR BASE64 FOR A PDF
+            }
+            base64 = post.picture ? Buffer.from(post.picture, "base64").toString("base64") : null;
+            if(post.picture){console.log(base64.slice(0,50));}//TODO: the buffer is GETTING WRITTEN IN AS A JSON STRING BRUH FIX THIS
+            return {...
+                post,
+                    picture
+            :
+                post.picture
+                    ? `data:application/octet-stream;base64,${base64}`
+                    : null
+            }
+        });
+        console.log(posts);
         res.status(200).json(posts);
-    } catch (error) {
-        console.error('Error retrieving posts:', error);
-        res.status(500).json({ error: 'Failed to fetch posts' });
-    }
 });
 
 const PORT = process.env.PORT || 3000;
