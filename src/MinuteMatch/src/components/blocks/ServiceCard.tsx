@@ -28,7 +28,7 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
         //TODO: Comments don't update database
         setComment(""); // reset textarea
     };
-
+    console.log("groupid",service.groupId);
     return (
         <div className="service-card">
             <div style={{ position: "relative", textAlign: "center", marginBottom: "1rem" }}>

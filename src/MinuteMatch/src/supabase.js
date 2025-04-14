@@ -343,7 +343,7 @@ app.get('/posts', async (req, res) => {
 app.get('/posts', async (req, res) => {
         let{data:result,error} = await supabase
         .from('posts')
-        .select("*, post_categories (category_id:categories (*))");
+        .select("*, post_categories (category_id:categories (*)), groupid:group (*)");
         if(error){
             console.error('Error retrieving posts:', error);
             res.status(500).json({ error: 'Failed to fetch posts' });
@@ -365,6 +365,7 @@ app.get('/posts', async (req, res) => {
             })
             return {...
                 post,
+                groupId:post.groupid?post.groupid.groupname:null,
                 category:catArr,
                     picture
             :
