@@ -2,3 +2,5 @@ src/MinuteMatch/node_modules/
 /node_modules
 .idea
 .DS_Store
+package-lock.json
+node_modules/.package-lock.json
