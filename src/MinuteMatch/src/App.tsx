@@ -23,6 +23,7 @@ function App() {
                         //name: post.user?.name || "Unknown User",
                     },
                     group: post.groupid || null, //todo: this is not going to be a null
+                    groupId:post.groupId || null,
                     category: post.category || [],
                     description: post.text || "No description available",
                     postComments: post.postcomments || [], //todo; may not need the empty array for the implementation of the service card, can be removed if not needed
