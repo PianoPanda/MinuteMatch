@@ -1,4 +1,3 @@
-
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import './index.css'
