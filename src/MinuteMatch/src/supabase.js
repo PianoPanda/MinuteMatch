@@ -257,6 +257,7 @@ app.post('/user', async (req, res) => {
         console.error('Server error:', err);
         res.status(500).json({ error: "Server error" });
     }
+    res.status(201).json({ message: "User added successfully", user: data[0] });
 });
 
 // **Add a Post**
