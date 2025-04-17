@@ -150,7 +150,6 @@ app.get('/user', async (req, res) => {
         flagged,
         reviews
       `)
-
     if(error){
         console.error("Error fetching users:",error);
         return res.status(500).json({error: "Failed to fetch users"});
@@ -220,6 +219,7 @@ app.post('/user', async (req, res) => {
         console.error('Server error:', err);
         res.status(500).json({ error: "Server error" });
     }
+    res.status(201).json({ message: "User added successfully", user: data[0] });
 });
 
 // **Add a Post**
