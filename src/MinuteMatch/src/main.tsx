@@ -26,6 +26,7 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
   return children;
 }
 
+
 createRoot(root!).render(
   <BrowserRouter>
     <Routes>
