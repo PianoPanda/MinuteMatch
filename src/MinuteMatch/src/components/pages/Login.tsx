@@ -36,7 +36,7 @@ export default function Login() {
     const users = localStorage.getItem('users') || '';
     const lines = users.split('\n');
     const match = lines.find(line => {
-      const [storedUser, storedHash] = line.split(':');
+      const [storedUser, ] = line.split(':');
       return storedUser === username;
     });
 
@@ -46,7 +46,7 @@ export default function Login() {
     }
 
     sha256Hash(username + password).then(hash => {
-      const [storedUser, storedHash] = match.split(':');
+      const [, storedHash] = match.split(':');
       if (hash === storedHash) {
         localStorage.setItem('authenticated', 'true');
         navigate('/'); // Or whatever your main page is
