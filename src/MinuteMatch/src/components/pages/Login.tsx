@@ -20,40 +20,77 @@ export default function Login() {
       return hashHex;
     });
   };
-
-  const saveUser = (username: string, hashedPassword: string) => {
-    // Once Supabase is implemented, we can get rid of this
-    // if (localStorage.getItem('users')) {
-    //   localStorage.removeItem('users');
-    // }
-    const userData = `${username}:${hashedPassword}\n`;
-    const existingUsers = localStorage.getItem('users') || '';
-    localStorage.setItem('users', existingUsers + userData);
-    console.log(localStorage.getItem('users'))
-  };
-
-  const handleLogin = () => {
-    const users = localStorage.getItem('users') || '';
-    const lines = users.split('\n');
-    const match = lines.find(line => {
-      const [storedUser, ] = line.split(':');
-      return storedUser === username;
-    });
-
-    if (!match) {
-      setError('User not found');
-      return;
-    }
-
-    sha256Hash(username + password).then(hash => {
-      const [, storedHash] = match.split(':');
-      if (hash === storedHash) {
-        localStorage.setItem('authenticated', 'true');
-        navigate('/'); // Or whatever your main page is
-      } else {
-        setError('Incorrect password');
+  const API_URL = 'http://localhost:3000';
+  const saveUser = async (username: string, hashedPassword: string) => {
+    try {
+      //  build whatever additional fields your table needs
+      const payload = {
+        username: username,
+        password: hashedPassword,
+        email: '',          // add real email if you collect it
+        ranking: 0,         // defaults that match your /user route
+        verified: false,
+        groups: [],
+        reviews: [],
+        last_active: new Date().toISOString(),
+        flagged: false,
+      };
+      console.log(payload)
+      const res = await fetch(`${API_URL}/user`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      console.log(res.ok)
+      if (!res.ok) {
+        // backend returns { error: "..."} on failure
+        const { error } = await res.json();
+        throw new Error(error ?? 'Failed to create user');
       }
-    });
+  
+      // optional – get the user row that the backend echoes back
+      const { user } = await res.json();
+      console.log('User created:', user);
+      // you could store something like user.id in localStorage/session here
+    } catch (err) {
+      // surface the error in the UI
+      setError((err as Error).message);
+    }
+  };
+  
+  const handleLogin = async () => {
+    try {
+      if (!username || !password) {
+        setError('Username and password are required');
+        return;
+      }
+  
+      // Hash the combination of username + password
+      const hash = await sha256Hash(username + password);
+  
+      // Query Supabase for the user with the matching username
+      const res = await fetch(`${API_URL}/user?username=${encodeURIComponent(username)}`);
+      const users = await res.json();
+  
+      if (!Array.isArray(users) || users.length === 0) {
+        setError('User not found');
+        return;
+      }
+
+      const user = users.find(user => user.username === username) // find corresponding user
+      if (user.password !== hash) {
+        setError('Incorrect password');
+        return;
+      }
+  
+      // If all checks pass
+      localStorage.setItem('authenticated', 'true');
+      localStorage.setItem('username', username); // optionally store user info
+      navigate('/'); // redirect to homepage or dashboard
+    } catch (err) {
+      console.error(err);
+      setError('Login failed');
+    }
   };
 
   const handleRegister = () => {
