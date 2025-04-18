@@ -1,0 +1,135 @@
+body {
+    background-color: #121212;
+    color: #f5f5f5;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .user-account-container {
+    padding: 3rem 6vw;
+    margin: 2rem auto;
+    max-width: 1600px;
+  }
+  
+  .user-account-layout {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  
+  .user-details-panel {
+    flex: 1 1 50%;
+    min-width: 300px;
+  }
+  
+  .rate-user-panel {
+    flex: 1 1 40%;
+    min-width: 300px;
+    background: #1e1e1e;
+    padding: 2rem;
+    border: 2px solid #800000;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.1);
+    height: fit-content;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    color: #ffdddd;
+    margin-bottom: 0.5rem;
+    border-bottom: 2px solid #800000;
+    padding-bottom: 0.25rem;
+  }
+  
+  h2 {
+    color: #ffdddd;
+    border-bottom: 1px solid #800000;
+    padding-bottom: 0.2rem;
+    margin-top: 1.5rem;
+  }
+  
+  .section {
+    margin-top: 2rem;
+  }
+  
+  .group-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+  
+  .group-list li {
+    padding: 0.75rem 1rem;
+    background-color: #2a2a2a;
+    margin-bottom: 0.5rem;
+    border-left: 4px solid #800000;
+    border-radius: 4px;
+  }
+  
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1rem;
+  }
+  
+  .category-box {
+    background: #2a2a2a;
+    padding: 1.25rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    color: #ffe5e5;
+    border: 1px solid #800000;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+  }
+  
+  .category-box:hover {
+    transform: scale(1.03);
+    background-color: #3a3a3a;
+  }
+  
+  .rate-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .rate-input,
+  .rate-textarea,
+  .rate-slider {
+    padding: 0.75rem;
+    border-radius: 6px;
+    background-color: #2a2a2a;
+    border: 1px solid #800000;
+    color: #ffe5e5;
+  }
+  
+  .rate-textarea {
+    resize: vertical;
+    height: 100px;
+  }
+  
+  .rate-slider {
+    accent-color: #800000;
+    cursor: pointer;
+  }
+  
+  .rate-submit {
+    background-color: #800000;
+    color: white;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .rate-submit:hover {
+    background-color: #a00000;
+  }

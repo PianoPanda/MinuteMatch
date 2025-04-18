@@ -7,6 +7,7 @@ import Navbar from "./components/Navbar.tsx";
 import PostService from "./PostService.tsx"
 import RequestService from "./RequestService.tsx";
 import Login from "./components/pages/Login.tsx";
+import UserAccount from "./UserAccount.tsx"; 
 
 const root = document.getElementById("root");
 
@@ -20,6 +21,7 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
 
   return children;
 }
+
 
 createRoot(root!).render(
   <BrowserRouter>
@@ -46,6 +48,14 @@ createRoot(root!).render(
           <>
             <Navbar />
             <RequestService />
+          </>
+        </ProtectedRoute>
+      } />
+      <Route path="/useraccount" element={
+        <ProtectedRoute>
+          <>
+            <Navbar />
+            <UserAccount />
           </>
         </ProtectedRoute>
       } />

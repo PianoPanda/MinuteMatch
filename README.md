@@ -17,8 +17,8 @@ To run any code we need to cd src/MinuteMatch/src
 - npm install express pg
 - installed Dompurify
 
-Install Supabase: `npm install @supabase/supabase-js`
-to run code `npm run dev` in one terminal and `node supabase.js` to run the server
+-Install Supabase: `npm install @supabase/supabase-js`
+-to run code: `npm run dev` in one terminal and `node supabase.js` to run the server
 
 ## implementing a postgreSQL password
 use Bacon85! when setting up postgreSQL
