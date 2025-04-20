@@ -543,6 +543,19 @@ app.post('/reviews', async (req, res) => {
     res.status(200).json(filtered);
   });
 
+
+// Required to resolve __dirname in ES modules
+// const __filename = fileURLToPath(import.meta.url); 
+// const __dirname = dirname(__filename); 
+
+// // Serve static files from frontend build
+// app.use(express.static(path.join(__dirname, 'dist'))); 
+
+// // Catch-all: send index.html for React Router to handle
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'dist', 'index.html')); 
+// });
+
 const PORT = process.env.PORT || 3000;
 console.log(`${PORT} Print out the port number to see if this is even working`);
 app.listen(PORT, () => {
