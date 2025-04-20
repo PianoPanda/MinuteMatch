@@ -262,53 +262,6 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
 });
 
 // **Get Posts**
-// app.get('/api/posts', async (req, res) => {
-//     try {
-//         const query = 'SELECT * FROM posts';
-//         const result = await pool.query(query);
-//         res.status(200).json(result.rows);
-//     } catch (error) {
-//         console.error('Error fetching posts:', error);
-//         res.status(500).json({ error: 'Failed to fetch posts' });
-//     }
-// });
-
-// app.get('/posts', async (req, res) => {
-//         let{data:result,error} = await supabase
-//         .from('posts')
-//         .select("*, post_categories (category_id:categories (*))");
-//         if(error){
-//             console.error('Error retrieving posts:', error);
-//             res.status(500).json({ error: 'Failed to fetch posts' });
-//         }
-//         console.log(result);
-//         // Convert the bytea (binary data) to base64 so frontend can use it
-//         const posts = result.map(post => {
-//             let base64;
-//             console.log(post.post_categories[0])
-//             if(post.picture) {
-//                 //console.log(/^[0-9a-fA-F]+$/.test(post.picture.slice(2)));
-//                 //console.log(post.picture.slice(0, 20));
-//                 //console.log(Buffer.from(post.picture.slice(2), "base64"))//TODO: IT IS LOGGING THE HEX BYTES FOR BASE64 FOR A PDF
-//             }
-//             base64 = post.picture ? Buffer.from(post.picture, "base64").toString("base64") : null;
-//             //if(post.picture){console.log(base64.slice(0,50));}//TODO: the buffer is GETTING WRITTEN IN AS A JSON STRING BRUH FIX THIS
-//             let catArr = post.post_categories.map(postcat => {
-//                 return postcat.category_id.name;
-//             })
-//             return {...
-//                 post,
-//                 category:catArr,
-//                     picture
-//             :
-//                 post.picture
-//                     ? `data:application/octet-stream;base64,${base64}`
-//                     : null
-//             }
-//         });
-//         //console.log(posts);
-//         res.status(200).json(posts);
-// });
 app.get('/posts', async (req, res) => {
     const { groupId } = req.query;
 
