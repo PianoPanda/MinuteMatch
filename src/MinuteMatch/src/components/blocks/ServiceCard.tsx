@@ -31,7 +31,35 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
 
     return (
         <div className="service-card">
-            <h3>{service.ServiceType ? 'Service Post' : 'General Post'}</h3>
+            <div style={{ position: "relative", textAlign: "center", marginBottom: "1rem" }}>
+            <h3 style={{ margin: 0 }}>
+                {service.ServiceType ? 'Service Post' : 'General Post'}
+            </h3>
+            <button
+                onClick={() => navigator.clipboard.writeText(service.id)}
+                title="Copy Post ID"
+                style={{
+                position: "absolute",
+                right: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: "24px",
+                height: "24px",
+                background: "none",
+                border: "1px solid #aaa",
+                borderRadius: "4px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                padding: 0,
+                fontSize: "14px",
+                }}
+            >
+                📋
+            </button>
+            </div>
+
 
             {/* Display the picture if it exists */}
             {service.picture ? (
