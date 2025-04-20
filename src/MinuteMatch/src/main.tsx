@@ -7,7 +7,8 @@ import Navbar from "./components/Navbar.tsx";
 import PostService from "./PostService.tsx"
 import RequestService from "./RequestService.tsx";
 import Login from "./components/pages/Login.tsx";
-import UserAccount from "./UserAccount.tsx"; 
+import UserAccount from "./UserAccount.tsx";
+import GroupPage from "./GroupPage.tsx";
 import Groups from './Groups.tsx';
 import { JSX } from 'react';
 import Categories from './Categories.tsx';

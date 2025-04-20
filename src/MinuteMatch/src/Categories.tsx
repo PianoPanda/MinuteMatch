@@ -55,10 +55,8 @@ const Categories: React.FC = () => {
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
         >
-          {categories.map((cat, idx) => (
-            <option key={idx} value={cat}>
-              {cat}
-            </option>
+          {categories.map((category, idx) => (
+            <option key={idx} value={category}>{category}</option>
           ))}
         </select>
 

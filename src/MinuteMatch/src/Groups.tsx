@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
 import axios from 'axios';
 import ServiceCard from './components/blocks/ServiceCard';
-import { Service } from './types';;
+import { Service } from './types';
+import { group } from 'console';
 
 type GroupMapping = {
     id: string;
