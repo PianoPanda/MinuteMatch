@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { Service } from "../../types"; // adjust the path as needed
 import "./ServiceCard.css";
@@ -42,13 +42,14 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
                 {console.log('\n')}
                 </>
             ) : (
-                console.log(`${service.picture}`),
-                console.log(`${service.user.id}`),
-                console.log(`${service.user}`),
+                // console.log(`${service.picture}`),
+                // console.log(`${service.user.id}`),
+                // console.log(`${service.user}`),
                 <p>No picture available</p>
             )}
 
-            <i>Posted by: <b>{service.user.id}</b></i>
+            {/* TODO: This is broken: */}
+            {/* <i>Posted by: <b>{service.user.id}</b></i>  */} 
             {service.groupId && <p><i>Group: {service.groupId}</i></p>}
             {service.category && service.category.length > 0 && (
                 <p><i>Categories: {service.category.join(', ')}</i></p>

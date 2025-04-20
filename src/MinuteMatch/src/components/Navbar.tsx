@@ -15,6 +15,8 @@ const Navbar = () => {
     { route: '/post-service', text: 'Post Service' },
     { route: '/request', text: 'Request Service' },
     { route: '/useraccount', text: 'User Account' },
+    { route: '/groups', text: 'Groups' },
+    { route: '/category', text: 'Category' },
   ];
 
   return (

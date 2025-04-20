@@ -8,6 +8,9 @@ import PostService from "./PostService.tsx"
 import RequestService from "./RequestService.tsx";
 import Login from "./components/pages/Login.tsx";
 import UserAccount from "./UserAccount.tsx"; 
+import Groups from './Groups.tsx';
+import { JSX } from 'react';
+import Categories from './Categories.tsx';
 
 const root = document.getElementById("root");
 
@@ -56,6 +59,22 @@ createRoot(root!).render(
           <>
             <Navbar />
             <UserAccount />
+          </>
+        </ProtectedRoute>
+      } />
+      <Route path="/groups" element={
+        <ProtectedRoute>
+          <>
+            <Navbar />
+            <Groups />
+          </>
+        </ProtectedRoute>
+      } />
+      <Route path="/category" element={
+        <ProtectedRoute>
+          <>
+            <Navbar />
+            <Categories />
           </>
         </ProtectedRoute>
       } />
