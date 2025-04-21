@@ -154,9 +154,9 @@ const PostService: React.FC = () => {
         </div>
 
         <div className="form-group">
-          <label>OPTIONAL: Create new Category</label>
+          <label id={"newCatLabel"}>OPTIONAL: Create new Category</label>
           <input type={"text"} onChange={(e)=>{tempNewCatgory.current=e.target.value}}></input>
-          <button type="button" onClick={()=>setNewCategory(tempNewCatgory.current)}>Create</button>
+          <button type="button" className={"smallButton"} onClick={()=>setNewCategory(tempNewCatgory.current)}>Create</button>
           <label>Select a Category</label>
           <select value={typeCategory} onChange={(e) => setTypeCategory(e.target.value)}>
             <option value="" disabled>Select a category</option>
