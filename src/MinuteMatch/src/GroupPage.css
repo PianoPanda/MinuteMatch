@@ -1,0 +1,29 @@
+.group-card{
+    border: 2px solid white;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 600px;
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow: hidden; /* keeps children inside boundaries */
+}
+
+.service-card h3 {
+    font-size: 1.5rem;
+    color: #ffc107;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.service-card i {
+    font-style: italic;
+    color: #a0a0a0;
+    display: block;
+    text-align: center;
+}
