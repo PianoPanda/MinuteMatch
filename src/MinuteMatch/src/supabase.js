@@ -37,7 +37,7 @@ app.get('/group', async (req, res) => {
 
     let { data: group, error } = await supabase
         .from('group')
-        .select('groupname');//list of objects with groupname attr
+        .select('*');//list of objects with groupname attr
     if (error){
         console.error('Error fetching groups:', error);
         res.status(500).json({ message: 'Error fetching group' });
