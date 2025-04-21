@@ -119,7 +119,7 @@ app.post('/categories', async (req, res) => {
         console.error('Error adding category:', err);
         res.status(500).json({ message: 'Error adding category' });
     }
-    if (checkDuplicates.rows.length > 0) {
+    if (checkDuplicates.length > 0) {
         return res.status(400).json({ message: `Category ${categoryName} already exists` });
     }
     let {error2} = await supabase

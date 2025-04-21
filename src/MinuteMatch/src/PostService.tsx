@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, useRef} from "react";
 import axios from "axios";
 import "./PostRequestService.css";
 
@@ -9,11 +9,14 @@ const PostService: React.FC = () => {
   const [typeGroup, setTypeGroup] = useState("");
   const [serviceDescription, setServiceDescription] = useState("");
   const [picture, setPicture] = useState<File | null>(null);
+  const [newCategory, setNewCategory] = useState("");
 
   // Dropdown data
   const [groups, setGroups] = useState<string[]>([]); // will not be implementing multiple groups in the set up
   const [categories, setCategories] = useState<string[]>([]);
 
+
+  const tempNewCatgory=useRef("");
   // Debug logs
   useEffect(() => {
     console.log(`Type Dropdown has changed to: ${typeDropdown}`);
@@ -61,6 +64,21 @@ const PostService: React.FC = () => {
     };
     fetchCategories();
   }, []);
+
+  useEffect(()=>{
+    //TODO: Send post to new category route
+    const makeCategory = async () => {
+      try {
+        await axios.post("http://localhost:3000/categories",{categoryName:newCategory});
+        console.log("Successfully added category");
+        setCategories([...categories, newCategory]);
+      }
+      catch(error){
+        console.error("Error adding category:", error);
+      }
+    };
+    makeCategory()
+  },[newCategory])
 
   // File input handler
   const FileImplementation = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,6 +154,9 @@ const PostService: React.FC = () => {
         </div>
 
         <div className="form-group">
+          <label>OPTIONAL: Create new Category</label>
+          <input type={"text"} onChange={(e)=>{tempNewCatgory.current=e.target.value}}></input>
+          <button type="button" onClick={()=>setNewCategory(tempNewCatgory.current)}>Create</button>
           <label>Select a Category</label>
           <select value={typeCategory} onChange={(e) => setTypeCategory(e.target.value)}>
             <option value="" disabled>Select a category</option>
