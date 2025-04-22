@@ -188,32 +188,23 @@ const UserAccount: React.FC = () => {
             <div className="section">
               <h2>Groups</h2>
               <ul className="group-list">
-                {groups.length > 0 ? (
-                  groups.map((group, idx) => <li key={idx}>{group}</li>)
-                ) : (
-                  <li>No groups joined</li>
-                )}
+                {groups.length ? groups.map((g, i) => <li key={i}>{g}</li>) : <li>No groups joined</li>}
               </ul>
             </div>
 
             <div className="section">
               <h2>Category-Based Ratings</h2>
               <div className="category-grid">
-                {reviews.length > 0 ? (
-                  reviews.map(([category, score], idx) => (
-                    <div key={idx} className="category-box">
-                      <strong>{category}</strong>
-                      <div>{score}/5</div>
-                    </div>
-                  ))
-                ) : (
-                  <p>No reviews yet</p>
-                )}
+                {reviews.length ? reviews.map(([cat, score], i) => (
+                  <div key={i} className="category-box">
+                    <strong>{cat}</strong>
+                    <div>{Number(score).toFixed(1)}/5</div>
+                  </div>
+                )) : <p>No reviews yet</p>}
               </div>
             </div>
           </div>
 
-          {/* RIGHT: Rate Form */}
           <div className="rate-user-panel">
             <h2>Rate Another User</h2>
             <form className="rate-form" onSubmit={handleSubmit}>
