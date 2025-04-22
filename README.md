@@ -12,6 +12,7 @@ to review: open pull request, click files, approve changes(approve selection mus
 To run any code we need to cd src/MinuteMatch/src
 
 - npm node.js
+- npm install react-autosuggest
 - npm nodemon
 - npm install
 - npm install express pg

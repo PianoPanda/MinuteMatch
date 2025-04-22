@@ -120,10 +120,44 @@ app.post('/categories', async (req, res) => {
 
 //** Get Users**
 // todo this will be implemented and used for the userlogin and also implemented and used for the ranking system**************************
+// app.get('/user', async (req, res) => {
+//     const {data, error} = await supabase
+//     .from('users')
+//     .select(`
+//         userid,
+//         username,
+//         password,
+//         email,
+//         ranking,
+//         verified,
+//         groups,
+//         last_active,
+//         flagged,
+//         reviews
+//       `)
+
+//     if(error){
+//         console.error("Error fetching users:",error);
+//         return res.status(500).json({error: "Failed to fetch users"});
+//     }
+
+//     const users = data.map(user => ({
+//         ...user, //get all of the users from our data base
+//         Reviews: Array.isArray(user.Reviews) ? user.Reviews : []
+//       }));
+    
+//       res.status(200).json(users);
+// });
+
 app.get('/user', async (req, res) => {
-    const {data, error} = await supabase
-    .from('users')
-    .select(`
+    const { username } = req.query;
+    if (!username) {
+      return res.status(400).json({ error: "Username query parameter is required" });
+    }
+  
+    const { data, error } = await supabase
+      .from('users')
+      .select(`
         userid,
         username,
         password,
@@ -135,19 +169,25 @@ app.get('/user', async (req, res) => {
         flagged,
         reviews
       `)
-
-    if(error){
-        console.error("Error fetching users:",error);
-        return res.status(500).json({error: "Failed to fetch users"});
+      .eq('username', username)
+      .single();
+  
+    if (error) {
+      console.error("Error fetching user:", error);
+      return res.status(500).json({ error: "Failed to fetch user" });
     }
-
-    const users = data.map(user => ({
-        ...user, //get all of the users from our data base
-        Reviews: Array.isArray(user.Reviews) ? user.Reviews : []
-      }));
-    
-      res.status(200).json(users);
-});
+    if (!data) {
+      return res.status(404).json({ error: "User not found" });
+    }
+  
+    // ← FIX: always return reviews as an array
+    const user = {
+      ...data,
+      reviews: Array.isArray(data.reviews) ? data.reviews : []
+    };
+  
+    res.status(200).json(user);
+  });
 
 // ** Add Users **
 app.post('/user', async (req, res) => {
@@ -308,6 +348,115 @@ app.get('/posts', async (req, res) => {
         //console.log(posts);
         res.status(200).json(posts);
 });
+
+// ***Posts the Reviews of the Users to users table***
+//todo: Preston come back and clean up the set up of this instance
+app.post('/reviews', async (req, res) => {
+    const { reviewer, who_ranked, post_ID, text, category, score } = req.body;
+  
+    console.log("Incoming review payload:", req.body);
+  
+    if (!reviewer || !who_ranked || !category || score == null) {
+      return res.status(400).json({ error: "Missing fields in request" });
+    }
+  
+    if (reviewer.trim().toLowerCase() === who_ranked.trim().toLowerCase()) {
+      return res.status(400).json({ error: "You cannot review yourself" });
+    }
+  
+    const normalizedUsername = who_ranked.trim().toLowerCase();
+  
+    const { data: userMatchData, error: fetchError } = await supabase
+      .from('users')
+      .select('userid, username, reviews')
+      .ilike('username', normalizedUsername); // case-insensitive match
+  
+    if (fetchError || !userMatchData || userMatchData.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+  
+    const userData = userMatchData[0];
+  
+    let existingReviews = [];
+    if (Array.isArray(userData.reviews)) {
+      existingReviews = userData.reviews;
+    } else if (typeof userData.reviews === "object" && userData.reviews !== null) {
+      existingReviews = [userData.reviews];
+    }
+  
+    const newReview = {
+      reviewer,
+      post_ID,
+      text,
+      category,
+      score,
+      timestamp: new Date().toISOString()
+    };
+  
+    existingReviews.push(newReview);
+  
+    // Calculate new overall ranking (average of all scores)
+    const scores = existingReviews.map(r => r.score);
+    const avgRanking = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+  
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        reviews: existingReviews,
+        ranking: avgRanking
+      })
+      .eq('userid', userData.userid)
+      .select('', { count: 'exact', head: true });
+  
+    if (updateError) {
+      return res.status(500).json({ error: "Failed to update user reviews/rank" });
+    }
+  
+    return res.status(200).json({ message: "Review and ranking updated successfully" });
+  });
+
+  //****** This is a lazy fix just to get all of the users */
+  app.get("/usernames", async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("username");
+  
+      if (error) throw error;
+  
+      const usernames = data.map(user => user.username);
+      res.json(usernames); // returns ["user1", "user2", ...]
+    } catch (err) {
+      console.error("Error fetching usernames:", err);
+      res.status(500).json({ error: "Failed to fetch usernames" });
+    }
+  });
+  //****lazy way of just getting all the user and seeing there text review */
+  app.get('/userreview', async (req, res) => {
+    const { username, category } = req.query;
+  
+    if (!username) {
+      return res.status(400).json({ error: "Username is required" });
+    }
+  
+    const { data, error } = await supabase
+      .from('users')
+      .select('reviews')
+      .eq('username', username)
+      .maybeSingle();
+  
+    if (error || !data) {
+      console.error("Failed to fetch reviews:", error);
+      return res.status(500).json({ error: "Could not fetch user reviews" });
+    }
+  
+    const allReviews = Array.isArray(data.reviews) ? data.reviews : [];
+    const filtered = category
+      ? allReviews.filter(r => r.category?.toLowerCase() === category.toLowerCase())
+      : allReviews;
+  
+    res.status(200).json(filtered);
+  });
 
 const PORT = process.env.PORT || 3000;
 console.log(`${PORT} Print out the port number to see if this is even working`);
