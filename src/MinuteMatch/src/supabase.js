@@ -87,20 +87,6 @@ app.get('/api/posts', async (req, res) => {
             timestamp: post.TimeStamp,
         }));
         res.json(posts);
-
-    //     client = await pool.connect();
-    //     const checkDuplicates = await client.query('SELECT * FROM "group" WHERE groupname = $1', [groupName]);
-    //     if (checkDuplicates.rows.length > 0) {
-    //         return res.status(400).json({ message: `Group ${groupName} already exists` });
-    //     }
-
-    //     await client.query('INSERT INTO "group" (groupname) VALUES ($1)', [groupName]);
-    //     res.status(201).json({ message: `Group ${groupName} added successfully` });
-    // } catch (err) {
-    //     console.error('Error adding group:', err);
-    //     res.status(500).json({ message: 'Error adding group' });
-    // } finally {
-    //     if (client) client.release();
     });
 
 
@@ -136,18 +122,19 @@ app.post('/categories', async (req, res) => {
 // todo this will be implemented and used for the userlogin and also implemented and used for the ranking system**************************
 app.get('/user', async (req, res) => {
     const {data, error} = await supabase
-    .from('user')
-    .select (
-        UserID,
-        Username,
-        email, //todo do we even implement the email login for this set up???????
+    .from('users')
+    .select(`
+        userid,
+        username,
+        password,
+        email,
         ranking,
         verified,
         groups,
         last_active,
         flagged,
         reviews
-    );
+      `)
 
     if(error){
         console.error("Error fetching users:",error);
@@ -164,49 +151,61 @@ app.get('/user', async (req, res) => {
 
 // ** Add Users **
 app.post('/user', async (req, res) => {
-    const {
-        //todo these values need to double check the implementation of the code for this instance
-      UserID,
-      Username,
-      Email,
-      Password,
-      Ranking = 0,
-      Verified = false,
-      Groups = [],
-      Last_active = new Date().toISOString(),
-      Flagged = false,
-      Reviews = []
-    } = req.body;
-  
-    if (!UserID || !Username || !Password) {
-      return res.status(400).json({ error: "Missing required fields (UserID, Username, Password)" });
-    }
-  
-    const { data, error } = await supabase
-      .from('user')
-      .insert([
-        {
-          userID,
-          username,
-          email,
-          password,
-          ranking,
-          verified,
-          groups,
-          last_active,
-          flagged,
-          reviews
+    try {
+        const {
+            username,
+            email = null,
+            password,
+            ranking = 0,
+            verified = false,
+            groups = [],
+            reviews = []
+        } = req.body;
+        // console.log("\n177: "+username)
+        // console.log("\n178: "+password)
+        if (!username || !password) {
+            return res.status(400).json({ error: "Username and Password are required" });
         }
-      ]);
-  
-    if (error) {
-      console.error("Error adding user:", error);
-      return res.status(500).json({ error: "Failed to add user" });
-    }
-  
-    res.status(201).json({ message: "User added successfully", user: data[0] });
-  });
 
+        const { data, error } = await supabase
+            .from('users')
+            .insert([
+                {
+                    username,
+                    email,
+                    password,
+                    ranking,
+                    verified,
+                    groups,
+                    reviews,
+                    last_active: new Date().toISOString(),
+                    flagged: false
+                }
+            ])
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Supabase error:', {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+            });
+            return res.status(500).json({
+                error: error.message || 'Insert failed',
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+            });
+        }
+
+        res.status(201).json({ user: data });
+    } catch (err) {
+        console.error('Server error:', err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
 
 // **Add a Post**
 app.post('/posts', upload.single('picture'), async (req, res) => {
