@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';  // for the file uploads
 
+
+
 import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = 'https://swzbqpnkyetlzdovujon.supabase.co'
 const supabaseKey = process.env.SUPABASE_KEY
@@ -85,20 +87,6 @@ app.get('/api/posts', async (req, res) => {
             timestamp: post.TimeStamp,
         }));
         res.json(posts);
-
-    //     client = await pool.connect();
-    //     const checkDuplicates = await client.query('SELECT * FROM "group" WHERE groupname = $1', [groupName]);
-    //     if (checkDuplicates.rows.length > 0) {
-    //         return res.status(400).json({ message: `Group ${groupName} already exists` });
-    //     }
-
-    //     await client.query('INSERT INTO "group" (groupname) VALUES ($1)', [groupName]);
-    //     res.status(201).json({ message: `Group ${groupName} added successfully` });
-    // } catch (err) {
-    //     console.error('Error adding group:', err);
-    //     res.status(500).json({ message: 'Error adding group' });
-    // } finally {
-    //     if (client) client.release();
     });
 
 
@@ -116,7 +104,7 @@ app.post('/categories', async (req, res) => {
         console.error('Error adding category:', err);
         res.status(500).json({ message: 'Error adding category' });
     }
-    if (checkDuplicates.length > 0) {
+    if (checkDuplicates.rows.length > 0) {
         return res.status(400).json({ message: `Category ${categoryName} already exists` });
     }
     let {error2} = await supabase
@@ -257,7 +245,6 @@ app.post('/user', async (req, res) => {
         console.error('Server error:', err);
         res.status(500).json({ error: "Server error" });
     }
-    res.status(201).json({ message: "User added successfully", user: data[0] });
 });
 
 // **Add a Post**
@@ -284,7 +271,7 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
         console.log(groupID);
         let {data:result,error} = await supabase
         .from('posts')
-        .insert({servicetype:service,category:categoryArray,text:description,picture:picture,groupid:groupID?groupID.data.groupid:null})
+        .insert({servicetype:service,text:description,picture:picture,groupid:groupID?groupID.data.groupid:null})
         .select();
         if (error){
             console.error('Error inserting post:', error);
@@ -400,8 +387,72 @@ app.get('/posts', async (req, res) => {
         //console.log(posts);
         res.status(200).json(posts);
 });
-// app.get('/posts', async (req, res) => {
-//     const { groupId } = req.query;
+
+// ***Posts the Reviews of the Users to users table***
+//todo: Preston come back and clean up the set up of this instance
+app.post('/reviews', async (req, res) => {
+    const { reviewer, who_ranked, post_ID, text, category, score } = req.body;
+  
+    console.log("Incoming review payload:", req.body);
+  
+    if (!reviewer || !who_ranked || !category || score == null) {
+      return res.status(400).json({ error: "Missing fields in request" });
+    }
+  
+    if (reviewer.trim().toLowerCase() === who_ranked.trim().toLowerCase()) {
+      return res.status(400).json({ error: "You cannot review yourself" });
+    }
+  
+    const normalizedUsername = who_ranked.trim().toLowerCase();
+  
+    const { data: userMatchData, error: fetchError } = await supabase
+      .from('users')
+      .select('userid, username, reviews')
+      .ilike('username', normalizedUsername); // case-insensitive match
+  
+    if (fetchError || !userMatchData || userMatchData.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+  
+    const userData = userMatchData[0];
+  
+    let existingReviews = [];
+    if (Array.isArray(userData.reviews)) {
+      existingReviews = userData.reviews;
+    } else if (typeof userData.reviews === "object" && userData.reviews !== null) {
+      existingReviews = [userData.reviews];
+    }
+  
+    const newReview = {
+      reviewer,
+      post_ID,
+      text,
+      category,
+      score,
+      timestamp: new Date().toISOString()
+    };
+  
+    existingReviews.push(newReview);
+  
+    // Calculate new overall ranking (average of all scores)
+    const scores = existingReviews.map(r => r.score);
+    const avgRanking = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+  
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        reviews: existingReviews,
+        ranking: avgRanking
+      })
+      .eq('userid', userData.userid)
+      .select('', { count: 'exact', head: true });
+  
+    if (updateError) {
+      return res.status(500).json({ error: "Failed to update user reviews/rank" });
+    }
+  
+    return res.status(200).json({ message: "Review and ranking updated successfully" });
+  });
 
 //     let query = supabase
 //         .from('posts')
