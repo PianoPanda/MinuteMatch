@@ -3,7 +3,6 @@ import Navbar from './components/Navbar';
 import axios from 'axios';
 import ServiceCard from './components/blocks/ServiceCard';
 import { Service } from './types';
-import { group } from 'console';
 
 type GroupMapping = {
     id: string;
@@ -45,7 +44,7 @@ const Groups: React.FC = () => {
               
 
             setGroups(groupNames);
-            setSelectedGroup(groupNames[0] || "");
+            setSelectedGroup(mappings[0]?.id || "");
         } catch (err) {
             console.error("Error fetching groups:", err);
         }
@@ -90,21 +89,21 @@ const Groups: React.FC = () => {
         const selectedGroupObj = groupMap.find(
             (group) => group.name.toLowerCase() === selectedGroup.toLowerCase()
         );
-        console.log(groupMap)
-        console.log(selectedGroupObj)
+        // console.log(groupMap)
+        // console.log(selectedGroupObj)
         // console.log(selectedGroupObj.id) //2c94fb2a-1eda-414f-9f8f-7aa18e517e7c
-        const groupName = post.groupid
-        console.log(groupMap)
-        console.log(groupName) //2c94fb2a-1eda-414f-9f8f-7aa18e517e7c
-        console.log(selectedGroup) //Umass Assenters
-        console.log(String(groupName) === String(selectedGroup))
-        const selectedGroupObj2 = groupMap.find(
-            (group) => group.name.toLowerCase() === selectedGroup.toLowerCase()
+        // console.log(post)
+        const groupName = post.groupId
+        // console.log(groupMap)
+        // console.log(groupName) //Umass Assenters
+        // console.log(selectedGroup) //2c94fb2a-1eda-414f-9f8f-7aa18e517e7c
+        // console.log(String(groupName) === String(selectedGroup)) //will always be false
+        const filteredGroupMap = groupMap.find(
+            (group) => group.name.toLowerCase() === String(groupName).toLowerCase()
         );
-        console.log(selectedGroupObj2)
-        console.log(selectedGroupObj2?.id)
-        return String(groupName) === String(selectedGroup)
-        // return groupName === selectedGroup
+        // console.log(selectedGroupObj2)
+        // console.log(selectedGroupObj2?.id)
+        return String(filteredGroupMap?.id) === String(selectedGroup)
     });
     console.log("Filtered posts:", filteredPosts);
 
