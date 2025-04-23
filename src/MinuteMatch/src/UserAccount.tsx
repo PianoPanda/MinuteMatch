@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
+import Autosuggest from "react-autosuggest";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import "./UserAccount.css";
 
@@ -11,41 +13,162 @@ const UserAccount: React.FC = () => {
   const [lastActive, setLastActive] = useState<string>("");
   const [flagged, setFlagged] = useState<boolean>(false);
 
+  const [categorySuggestions, setCategorySuggestions] = useState<string[]>([]);
+  const [allCategories, setAllCategories] = useState<string[]>([]);
+
+  const [userSuggestions, setUserSuggestions] = useState<string[]>([]);
+  const [allUsernames, setAllUsernames] = useState<string[]>([]);
+
   const [formData, setFormData] = useState({
-    reviewee: "",
-    postId: "",
+    who_ranked: "",
+    post_ID: "",
     text: "",
-    rating: 0,
+    category: "",
+    score: 0,
   });
 
+  const [reviewFeed, setReviewFeed] = useState<any[]>([]);
+  const [reviewCategory, setReviewCategory] = useState("");
+  const [searchUsername, setSearchUsername] = useState("");
+  const [searchUserReviews, setSearchUserReviews] = useState<any[]>([]);
+
+  const navigate = useNavigate();
+
+  const calculateCategoryAverages = (reviewList: any[]): [string, number][] => {
+    const grouped: Record<string, number[]> = {};
+    reviewList.forEach((r) => {
+      if (!grouped[r.category]) grouped[r.category] = [];
+      grouped[r.category].push(r.score);
+    });
+    return Object.entries(grouped).map(([category, scores]) => {
+      const avg = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+      return [category, avg];
+    });
+  };
+
+  const calculateOverallRank = (reviewList: any[]): number => {
+    if (!reviewList.length) return 0;
+    const total = reviewList.reduce((sum, r) => sum + r.score, 0);
+    return total / reviewList.length;
+  };
+
   useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (!storedUsername) return navigate("/login");
+
     const fetchUserData = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/user");
-        const user = res.data[0];
-        setUsername(user.Username);
-        setRank(user.Ranking);
-        setReviews(user.Reviews);
-        setGroups(user.Groups || []);
-        setLastActive(user.Last_active);
-        setFlagged(user.Flagged);
+        const res = await axios.get(`http://localhost:3000/user?username=${encodeURIComponent(storedUsername)}`);
+        const user = res.data;
+
+        setUsername(user.username || "Unknown");
+        setRank(user.ranking ?? null);
+        setReviews(calculateCategoryAverages(user.reviews || []));
+        setGroups(user.groups || []);
+        setLastActive(user.last_active || new Date().toISOString());
+        setFlagged(user.flagged ?? false);
       } catch (err) {
-        console.error("Error fetching user data:", err);
+        console.error("Error fetching user:", err);
+        navigate("/login");
       }
     };
+
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/categories");
+        setAllCategories(res.data);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+
+    const fetchUsernames = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/usernames");
+        if (Array.isArray(res.data)) {
+          setAllUsernames(res.data.filter(u => u.toLowerCase() !== storedUsername.toLowerCase()));
+        }
+      } catch (err) {
+        console.error("Error fetching usernames:", err);
+      }
+    };
+
     fetchUserData();
-  }, []);
+    fetchCategories();
+    fetchUsernames();
+  }, [navigate]);
+
+  const fetchUserReviews = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/userreview", {
+        params: {
+          username,
+          category: reviewCategory || undefined,
+        },
+      });
+      setReviewFeed(res.data);
+    } catch (err) {
+      console.error("Error fetching user reviews:", err);
+    }
+  };
+
+  const fetchSearchUserReviews = async () => {
+    if (!searchUsername) return;
+    try {
+      const res = await axios.get("http://localhost:3000/userreview", {
+        params: { username: searchUsername },
+      });
+      setSearchUserReviews(res.data);
+    } catch (err) {
+      console.error("Failed to fetch searched user reviews", err);
+    }
+  };
+
+  useEffect(() => {
+    if (username !== "Loading...") {
+      fetchUserReviews();
+    }
+  }, [username, reviewCategory]);
+
+  const getCategorySuggestions = (value: string) => {
+    const input = value.toLowerCase().trim();
+    return allCategories.filter(c => c.toLowerCase().includes(input)).slice(0, 10);
+  };
+
+  const getUserSuggestions = (value: string) => {
+    const input = value.toLowerCase().trim();
+    return allUsernames
+      .filter(user => user.toLowerCase().includes(input))
+      .slice(0, 10);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.who_ranked.trim().toLowerCase() === username.trim().toLowerCase()) {
+      alert("You cannot rate yourself.");
+      return;
+    }
+
     try {
       await axios.post("http://localhost:3000/reviews", {
         reviewer: username,
-        ...formData,
-        rating: Number(formData.rating),
+        who_ranked: formData.who_ranked,
+        post_ID: formData.post_ID,
+        text: formData.text,
+        category: formData.category,
+        score: Number(formData.score),
       });
+
+      const res = await axios.get(`http://localhost:3000/user?username=${formData.who_ranked}`);
+      const updatedUser = res.data;
+
+      if (formData.who_ranked.trim().toLowerCase() === username.trim().toLowerCase()) {
+        setReviews(calculateCategoryAverages(updatedUser.reviews || []));
+        setRank(calculateOverallRank(updatedUser.reviews || []));
+      }
+
       alert("Review submitted!");
-      setFormData({ reviewee: "", postId: "", text: "", rating: 0 });
+      setFormData({ who_ranked: "", post_ID: "", text: "", category: "", score: 0 });
     } catch (err: any) {
       alert(err?.response?.data?.error || "Failed to submit review.");
     }
@@ -56,7 +179,6 @@ const UserAccount: React.FC = () => {
       <Navbar />
       <div className="user-account-container">
         <div className="user-account-layout">
-          {/* LEFT: User Details */}
           <div className="user-details-panel">
             <h1>👤 {username}</h1>
             <p><strong>Ranking:</strong> {rank?.toFixed(1) ?? "N/A"}</p>
@@ -96,47 +218,130 @@ const UserAccount: React.FC = () => {
             <h2>Rate Another User</h2>
             <form className="rate-form" onSubmit={handleSubmit}>
               <label>Username</label>
-              <input
-                type="text"
-                placeholder="Type username..."
-                className="rate-input"
-                value={formData.reviewee}
-                onChange={(e) => setFormData({ ...formData, reviewee: e.target.value })}
+              <Autosuggest
+                suggestions={userSuggestions}
+                onSuggestionsFetchRequested={({ value }) =>
+                  setUserSuggestions(getUserSuggestions(value))
+                }
+                onSuggestionsClearRequested={() => setUserSuggestions([])}
+                getSuggestionValue={s => s}
+                renderSuggestion={s => <div>{s}</div>}
+                inputProps={{
+                  placeholder: "Search username...",
+                  value: formData.who_ranked,
+                  onChange: (_e, { newValue }) =>
+                    setFormData({ ...formData, who_ranked: newValue })
+                }}
               />
 
               <label>Post ID</label>
               <input
                 type="text"
-                placeholder="Enter Post ID"
                 className="rate-input"
-                value={formData.postId}
-                onChange={(e) => setFormData({ ...formData, postId: e.target.value })}
+                value={formData.post_ID}
+                placeholder="Enter Post ID"
+                onChange={(e) => setFormData({ ...formData, post_ID: e.target.value })}
               />
 
               <label>Review Text</label>
               <textarea
-                placeholder="Write your review..."
                 className="rate-textarea"
+                placeholder="Write your review..."
                 value={formData.text}
                 onChange={(e) => setFormData({ ...formData, text: e.target.value })}
               />
 
-              <label>Rating (0–5)</label>
+              <label>Category</label>
+              <Autosuggest
+                suggestions={categorySuggestions}
+                onSuggestionsFetchRequested={({ value }) =>
+                  setCategorySuggestions(getCategorySuggestions(value))
+                }
+                onSuggestionsClearRequested={() => setCategorySuggestions([])}
+                getSuggestionValue={s => s}
+                renderSuggestion={s => <div>{s}</div>}
+                inputProps={{
+                  placeholder: "Type category...",
+                  value: formData.category,
+                  onChange: (_e, { newValue }) =>
+                    setFormData({ ...formData, category: newValue })
+                }}
+              />
+
+              <label>Score (0–5)</label>
               <input
                 type="range"
                 min="0"
                 max="5"
                 step="1"
                 className="rate-slider"
-                value={formData.rating}
-                onChange={(e) => setFormData({ ...formData, rating: parseInt(e.target.value) })}
+                value={formData.score}
+                onChange={(e) => setFormData({ ...formData, score: parseInt(e.target.value) })}
               />
-              <div style={{ textAlign: "right" }}>{formData.rating}/5</div>
+              <div style={{ textAlign: "right" }}>{formData.score}/5</div>
 
               <button type="submit" className="rate-submit">
                 Submit Review
               </button>
             </form>
+          </div>
+        </div>
+
+        <div className="section">
+          <h2>All Reviews</h2>
+          <input
+            className="rate-input"
+            type="text"
+            placeholder="Filter by category (optional)"
+            value={reviewCategory}
+            onChange={(e) => setReviewCategory(e.target.value)}
+          />
+          <div className="review-feed">
+            {reviewFeed.length > 0 ? (
+              reviewFeed.map((r, i) => (
+                <div key={i} className="review-card">
+                  <strong>{r.category}</strong> — {r.score}/5
+                  <p>{r.text}</p>
+                  <small>by {r.reviewer}</small>
+                </div>
+              ))
+            ) : (
+              <p>No reviews to show.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="section">
+          <h2>Search User Reviews</h2>
+          <Autosuggest
+            suggestions={userSuggestions}
+            onSuggestionsFetchRequested={({ value }) =>
+              setUserSuggestions(getUserSuggestions(value))
+            }
+            onSuggestionsClearRequested={() => setUserSuggestions([])}
+            getSuggestionValue={s => s}
+            renderSuggestion={s => <div>{s}</div>}
+            inputProps={{
+              placeholder: "Search username...",
+              value: searchUsername,
+              onChange: (_e, { newValue }) => setSearchUsername(newValue)
+            }}
+          />
+          <button onClick={fetchSearchUserReviews} className="rate-submit" style={{ marginTop: "1rem" }}>
+            Search Reviews
+          </button>
+          <div className="review-feed" style={{ marginTop: "1rem" }}>
+            {searchUserReviews.length > 0 ? (
+              searchUserReviews.map((r, i) => (
+                <div key={i} className="review-card">
+                  <strong>{r.category}</strong> — {r.score}/5
+                  <p>{r.text}</p>
+                  <small>by {r.reviewer}</small>
+                </div>
+              ))
+            ) : (
+              <p>No reviews for this user.</p>
+            )}
           </div>
         </div>
       </div>

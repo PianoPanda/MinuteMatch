@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { Service } from "../../types"; // adjust the path as needed
 import "./ServiceCard.css";
@@ -31,7 +31,35 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
     console.log("groupid",service.groupId);
     return (
         <div className="service-card">
-            <h3>{service.ServiceType ? 'Service Post' : 'General Post'}</h3>
+            <div style={{ position: "relative", textAlign: "center", marginBottom: "1rem" }}>
+            <h3 style={{ margin: 0 }}>
+                {service.ServiceType ? 'Service Post' : 'General Post'}
+            </h3>
+            <button
+                onClick={() => navigator.clipboard.writeText(String(service.id))}
+                title="Copy Post ID"
+                style={{
+                position: "absolute",
+                right: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: "24px",
+                height: "24px",
+                background: "none",
+                border: "1px solid #aaa",
+                borderRadius: "4px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                padding: 0,
+                fontSize: "14px",
+                }}
+            >
+                📋
+            </button>
+            </div>
+
 
             {/* Display the picture if it exists */}
             {service.picture ? (
@@ -42,13 +70,14 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
                 {console.log('\n')}
                 </>
             ) : (
-                console.log(`${service.picture}`),
-                console.log(`${service.user.id}`),
-                console.log(`${service.user}`),
+                // console.log(`${service.picture}`),
+                // console.log(`${service.user.id}`),
+                // console.log(`${service.user}`),
                 <p>No picture available</p>
             )}
 
-            <i>Posted by: <b>{service.user.id}</b></i>
+            {/* TODO: This is broken: */}
+            {/* <i>Posted by: <b>{service.user.id}</b></i>  */} 
             {service.groupId && <p><i>Group: {service.groupId}</i></p>}
             {service.category && service.category.length > 0 && (
                 <p><i>Categories: {service.category.join(', ')}</i></p>

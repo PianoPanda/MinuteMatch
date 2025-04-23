@@ -1,5 +1,5 @@
 // App.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import { Service } from "./types";
 import ServiceCard from "./components/blocks/ServiceCard";
