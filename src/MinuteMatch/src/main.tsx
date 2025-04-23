@@ -7,7 +7,8 @@ import Navbar from "./components/Navbar.tsx";
 import PostService from "./PostService.tsx"
 import RequestService from "./RequestService.tsx";
 import Login from "./components/pages/Login.tsx";
-import UserAccount from "./UserAccount.tsx"; 
+import UserAccount from "./UserAccount.tsx";
+import GroupPage from "./GroupPage.tsx";
 
 const root = document.getElementById("root");
 
@@ -56,6 +57,15 @@ createRoot(root!).render(
           <>
             <Navbar />
             <UserAccount />
+          </>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/groups" element={
+        <ProtectedRoute>
+          <>
+            <Navbar />
+            <GroupPage />
           </>
         </ProtectedRoute>
       } />

@@ -37,7 +37,7 @@ app.get('/group', async (req, res) => {
 
     let { data: group, error } = await supabase
         .from('group')
-        .select('groupname');//list of objects with groupname attr
+        .select('*');//list of objects with groupname attr
     if (error){
         console.error('Error fetching groups:', error);
         res.status(500).json({ message: 'Error fetching group' });
@@ -118,7 +118,7 @@ app.post('/categories', async (req, res) => {
         console.error('Error adding category:', err);
         res.status(500).json({ message: 'Error adding category' });
     }
-    if (checkDuplicates.rows.length > 0) {
+    if (checkDuplicates.length > 0) {
         return res.status(400).json({ message: `Category ${categoryName} already exists` });
     }
     let {error2} = await supabase
@@ -138,15 +138,15 @@ app.get('/user', async (req, res) => {
     const {data, error} = await supabase
     .from('user')
     .select (
-        UserID,
-        Username,
-        email, //todo do we even implement the email login for this set up???????
-        ranking,
-        verified,
-        groups,
-        last_active,
-        flagged,
-        reviews
+        "UserID",
+        "Username",
+        "email", //todo do we even implement the email login for this set up???????
+        "ranking",
+        "verified",
+        "groups",
+        "last_active",
+        "flagged",
+        "reviews"
     );
 
     if(error){
@@ -276,7 +276,7 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
 app.get('/posts', async (req, res) => {
         let{data:result,error} = await supabase
         .from('posts')
-        .select("*, post_categories (category_id:categories (*))");
+        .select("*, post_categories (category_id:categories (*)), groupid:group (*)");
         if(error){
             console.error('Error retrieving posts:', error);
             res.status(500).json({ error: 'Failed to fetch posts' });
@@ -298,6 +298,7 @@ app.get('/posts', async (req, res) => {
             })
             return {...
                 post,
+                groupId:post.groupid?post.groupid.groupname:null,
                 category:catArr,
                     picture
             :
