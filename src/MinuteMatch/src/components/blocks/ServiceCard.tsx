@@ -36,7 +36,7 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
                 {service.ServiceType ? 'Service Post' : 'General Post'}
             </h3>
             <button
-                onClick={() => navigator.clipboard.writeText(service.id)}
+                onClick={() => navigator.clipboard.writeText(String(service.id))}
                 title="Copy Post ID"
                 style={{
                 position: "absolute",
