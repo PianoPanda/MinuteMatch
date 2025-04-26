@@ -1,151 +1,151 @@
 
 /*Look at prestons edits becuase they have the hover label to get the rating of the of the user*/
-  .service-card {
-    border: 2px solid white;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 20px auto;
-    width: 100%;
-    max-width: 1200px;
-    background-color: #1e1e1e;
-    color: #f0f0f0;
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    overflow: hidden;
-  }
-  
-  .card-header {
-    position: relative;
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  
-  .service-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: 4px;
-    text-align: center;
-  }
-  
-  .username-label {
-    font-style: italic;
-    color: #a0a0a0;
-    display: block;
-    text-align: center;
-  }
-  
-  .username-label b,
-  .clickable {
-    color: #ffc107;
-    transition: background-color 0.2s ease, color 0.2s ease;
-    padding: 2px 4px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .username-label b:hover,
-  .clickable:hover {
-    background-color: #ffc107;
-    color: #1e1e1e;
-  }
-  
-  .icon-button {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 24px;
-    height: 24px;
-    background: none;
-    border: 1px solid #aaa;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 0;
-    font-size: 14px;
-    transition: background-color 0.2s ease;
-  }
-  
-  .icon-button:hover {
-    background-color: #ffc107;
-    color: #121212;
-    border-color: #ffc107;
-  }
-  
-  .icon-button.copy {
-    right: 0;
-  }
-  
-  .icon-button.flag {
-    right: 32px;
-  }
-  
-  .service-card img,
-  .service-card iframe {
-    display: block;
-    margin: 0 auto;
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-  }
-  
-  .service-card i {
-    font-style: italic;
-    color: #a0a0a0;
-    display: block;
-    text-align: center;
-  }
-  
-  .comments-section {
-    margin-top: 10px;
-    background-color: #2c2c2c;
-    padding: 10px;
-    border-radius: 8px;
-  }
-  
-  .comment {
-    border-bottom: 1px solid #444;
-    padding: 5px 0;
-    transition: background-color 0.2s ease;
-  }
-  
-  .comment:hover {
-    background-color: #3a3a3a;
-  }
-  
-  .comment:last-child {
-    border-bottom: none;
-  }
-  
-  textarea {
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #555;
-    background-color: #333;
-    color: #fff;
-    resize: vertical;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  
-  button {
-    margin-top: 10px;
-    padding: 10px 16px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s ease-in-out;
-    align-self: flex-end;
-  }
-  
-  button:hover {
-    background-color: #218838;
-  }
+.service-card {
+  border: 2px solid white;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px auto;
+  width: 100%;
+  max-width: 1200px;
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.card-header {
+  position: relative;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.service-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.username-label {
+  font-style: italic;
+  color: #a0a0a0;
+  display: block;
+  text-align: center;
+}
+
+.username-label b,
+.clickable {
+  color: #ffc107;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  padding: 2px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.username-label b:hover,
+.clickable:hover {
+  background-color: #ffc107;
+  color: #1e1e1e;
+}
+
+.icon-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.icon-button:hover {
+  background-color: #ffc107;
+  color: #121212;
+  border-color: #ffc107;
+}
+
+.icon-button.copy {
+  right: 0;
+}
+
+.icon-button.flag {
+  right: 32px;
+}
+
+.service-card img,
+.service-card iframe {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.service-card i {
+  font-style: italic;
+  color: #a0a0a0;
+  display: block;
+  text-align: center;
+}
+
+.comments-section {
+  margin-top: 10px;
+  background-color: #2c2c2c;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.comment {
+  border-bottom: 1px solid #444;
+  padding: 5px 0;
+  transition: background-color 0.2s ease;
+}
+
+.comment:hover {
+  background-color: #3a3a3a;
+}
+
+.comment:last-child {
+  border-bottom: none;
+}
+
+textarea {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #555;
+  background-color: #333;
+  color: #fff;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out;
+  align-self: flex-end;
+}
+
+button:hover {
+  background-color: #218838;
+}

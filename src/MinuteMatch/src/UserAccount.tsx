@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -41,9 +40,21 @@ const UserAccount: React.FC = () => {
         setUsername(user.username || "Unknown");
         setRank(user.ranking ?? null);
         setReviews(calculateCategoryAverages(user.reviews || []));
-        setGroups(user.groups || []);
+        setGroups(user.group_members.map((m)=>m.group.groupname) || []);
         setLastActive(user.last_active || new Date().toISOString());
         setFlagged(user.flagged ?? false);
+
+        const categoryAverages = calculateCategoryAverages(user.reviews || []);
+        setReviews(categoryAverages);
+
+        if (categoryAverages.length > 0) {
+          const total = categoryAverages.reduce((sum, [, score]) => sum + score, 0);
+          const average = total / categoryAverages.length;
+          setRank(average);
+        } else {
+          setRank(null);
+        }
+
       } catch (err) {
         console.error("Error fetching user:", err);
         navigate("/login");
@@ -76,7 +87,7 @@ const UserAccount: React.FC = () => {
       <div className="ua-container">
         <div className="ua-info-panel">
           <h1 className="ua-title">👤 {username}</h1>
-          <p><strong>Ranking:</strong> {rank?.toFixed(1) ?? "N/A"}</p>
+          <p><strong>Ranking:</strong> {rank !== null ? rank.toFixed(1) : "N/A"}</p>
           <p><strong>Last Active:</strong> {new Date(lastActive).toLocaleString()}</p>
           <p><strong>Account Flagged:</strong> {flagged ? "Yes" : "No"}</p>
 
