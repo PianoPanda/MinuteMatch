@@ -1,13 +1,9 @@
+
 body {
-    font-family: 'Times New Roman', Times, serif;
-    background-color: #181818;  /* Dark background */
-    margin: 0;
-    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    color: #f4f4f4;  /* Light text color for contrast */
 }
 
 .form-container {
