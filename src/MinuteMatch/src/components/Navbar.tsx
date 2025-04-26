@@ -49,6 +49,8 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const navigate = useNavigate();
+
   const navbarInfo: NavbarItem[] = [
     { route: '/', text: 'View' },
     { route: '/post-service', text: 'Post Service' },
@@ -57,6 +59,11 @@ const Navbar = () => {
     { route: '/groups', text: 'Groups' },
     { route: '/category', text: 'Category' },
   ];
+
+  const handleLogout = () => {
+    localStorage.clear(); // clear session
+    navigate('/login');   // redirect to login
+  };
 
   const handleLogout = () => {
     localStorage.clear(); // clear session
@@ -74,6 +81,11 @@ const Navbar = () => {
           {item.text}
         </Link>
       ))}
+
+      {/* 🔐 Logout button */}
+      <button className="navbar-item logout-button" onClick={handleLogout}>
+        Logout
+      </button>
 
       {/* 🔐 Logout button */}
       <button className="navbar-item logout-button" onClick={handleLogout}>

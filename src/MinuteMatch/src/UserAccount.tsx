@@ -354,7 +354,9 @@
 // see if the fix works
 import React, { useEffect, useState } from "react";
 import Autosuggest from "react-autosuggest";
+import Autosuggest from "react-autosuggest";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import "./UserAccount.css";
@@ -375,6 +377,8 @@ const UserAccount: React.FC = () => {
   const [formData, setFormData] = useState({
     who_ranked: "",
     post_ID: "",
+    who_ranked: "",
+    post_ID: "",
     text: "",
     category: "",
     score: 0,
@@ -388,6 +392,9 @@ const UserAccount: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (!storedUsername) return navigate("/login");
+
     const storedUsername = localStorage.getItem("username");
     if (!storedUsername) return navigate("/login");
 
@@ -423,10 +430,42 @@ const UserAccount: React.FC = () => {
         if (Array.isArray(res.data)) {
           setAllUsernames(res.data.filter(u => u.toLowerCase() !== storedUsername.toLowerCase()));
         }
+        const res = await axios.get(`http://localhost:3000/user?username=${encodeURIComponent(storedUsername)}`);
+        const user = res.data;
+
+        setUsername(user.username || "Unknown");
+        setRank(user.ranking ?? null);
+        setReviews(calculateCategoryAverages(user.reviews || []));
+        setGroups(user.groups || []);
+        setLastActive(user.last_active || new Date().toISOString());
+        setFlagged(user.flagged ?? false);
       } catch (err) {
+        console.error("Error fetching user:", err);
+        navigate("/login");
+      }
+    };
+
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/categories");
+        setAllCategories(res.data);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+
+    const fetchUsernames = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/usernames");
+        if (Array.isArray(res.data)) {
+          setAllUsernames(res.data.filter(u => u.toLowerCase() !== storedUsername.toLowerCase()));
+        }
+      } catch (err) {
+        console.error("Error fetching usernames:", err);
         console.error("Error fetching usernames:", err);
       }
     };
+
 
     fetchUserData();
     fetchCategories();
@@ -502,6 +541,11 @@ const UserAccount: React.FC = () => {
       return;
     }
 
+    if (formData.who_ranked.trim().toLowerCase() === username.trim().toLowerCase()) {
+      alert("You cannot rate yourself.");
+      return;
+    }
+
     try {
       await axios.post("http://localhost:3000/reviews", {
         reviewer: username,
@@ -513,6 +557,7 @@ const UserAccount: React.FC = () => {
       });
 
       alert("Review submitted!");
+      setFormData({ who_ranked: "", post_ID: "", text: "", category: "", score: 0 });
       setFormData({ who_ranked: "", post_ID: "", text: "", category: "", score: 0 });
     } catch (err: any) {
       alert(err?.response?.data?.error || "Failed to submit review.");
@@ -574,6 +619,20 @@ const UserAccount: React.FC = () => {
                   onChange: (_e, { newValue }) =>
                     setFormData({ ...formData, who_ranked: newValue })
                 }}
+              <Autosuggest
+                suggestions={userSuggestions}
+                onSuggestionsFetchRequested={({ value }) =>
+                  setUserSuggestions(getUserSuggestions(value))
+                }
+                onSuggestionsClearRequested={() => setUserSuggestions([])}
+                getSuggestionValue={s => s}
+                renderSuggestion={s => <div>{s}</div>}
+                inputProps={{
+                  placeholder: "Search username...",
+                  value: formData.who_ranked,
+                  onChange: (_e, { newValue }) =>
+                    setFormData({ ...formData, who_ranked: newValue })
+                }}
               />
 
               <label>Post ID</label>
@@ -581,18 +640,40 @@ const UserAccount: React.FC = () => {
                 type="text"
                 className="rate-input"
                 value={formData.post_ID}
+                className="rate-input"
+                value={formData.post_ID}
                 placeholder="Enter Post ID"
+                onChange={(e) => setFormData({ ...formData, post_ID: e.target.value })}
                 onChange={(e) => setFormData({ ...formData, post_ID: e.target.value })}
               />
 
               <label>Review Text</label>
               <textarea
                 className="rate-textarea"
+                className="rate-textarea"
                 placeholder="Write your review..."
                 value={formData.text}
                 onChange={(e) => setFormData({ ...formData, text: e.target.value })}
               />
 
+              <label>Category</label>
+              <Autosuggest
+                suggestions={categorySuggestions}
+                onSuggestionsFetchRequested={({ value }) =>
+                  setCategorySuggestions(getCategorySuggestions(value))
+                }
+                onSuggestionsClearRequested={() => setCategorySuggestions([])}
+                getSuggestionValue={s => s}
+                renderSuggestion={s => <div>{s}</div>}
+                inputProps={{
+                  placeholder: "Type category...",
+                  value: formData.category,
+                  onChange: (_e, { newValue }) =>
+                    setFormData({ ...formData, category: newValue })
+                }}
+              />
+
+              <label>Score (0–5)</label>
               <label>Category</label>
               <Autosuggest
                 suggestions={categorySuggestions}
@@ -619,7 +700,10 @@ const UserAccount: React.FC = () => {
                 className="rate-slider"
                 value={formData.score}
                 onChange={(e) => setFormData({ ...formData, score: parseInt(e.target.value) })}
+                value={formData.score}
+                onChange={(e) => setFormData({ ...formData, score: parseInt(e.target.value) })}
               />
+              <div style={{ textAlign: "right" }}>{formData.score}/5</div>
               <div style={{ textAlign: "right" }}>{formData.score}/5</div>
 
               <button type="submit" className="rate-submit">

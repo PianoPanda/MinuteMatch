@@ -4,6 +4,7 @@
     "express": "^5.1.0",
     "multer": "^1.4.5-lts.2",
     "nodemon": "^3.1.9",
-    "pg": "^8.14.1"
+    "pg": "^8.14.1",
+    "react-autosuggest": "^10.1.0"
   }
 }
