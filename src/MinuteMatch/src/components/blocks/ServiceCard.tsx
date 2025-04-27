@@ -32,7 +32,7 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
     return (
         <div className="service-card">
             <div style={{ position: "relative", textAlign: "center", marginBottom: "1rem" }}>
-            <h3 style={{ margin: 0 }}>
+            <h3 style={{ margin: 0, color:service.ServiceType ? "#9A3131":"white"}}>
                 {service.ServiceType ? 'Service Post' : 'General Post'}
             </h3>
             <button
