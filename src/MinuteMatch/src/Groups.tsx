@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import Navbar from './components/Navbar';
 import axios from 'axios';
 import ServiceCard from './components/blocks/ServiceCard';
@@ -15,6 +15,12 @@ const Groups: React.FC = () => {
     const [selectedGroup, setSelectedGroup] = useState<string>("");
     const [posts, setPosts] = useState<Service[]>([]);
     const [groupMap, setGroupMap] = useState<GroupMapping[]>([]);
+    const [newGroup, setNewGroup] = useState(null);
+    const newGroupName = useRef("");
+    const [categories,setCategories] = useState([]);
+    const [users, setUsers] = useState<any[]>([]);
+    const [newGroupCategories,setNewGroupCategories] = useState([]);
+    const [newGroupUsers,setNewGroupUsers] = useState([]);
 
     useEffect(() => {
         const debugFetchGroupTable = async () => {
@@ -27,6 +33,31 @@ const Groups: React.FC = () => {
         };
     
         debugFetchGroupTable();
+    }, []);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const { data } = await axios.get("http://localhost:3000/categories");
+                console.log("Successfully fetched categories");
+                setCategories(data);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            }
+        };
+        fetchCategories();
+    }, []);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await axios.get("http://localhost:3000/all_users");
+                setUsers(response.data);
+            } catch (error) {
+                console.error("Error fetching users:", error);
+            }
+        };
+        fetchUsers();
     }, []);
 
     // Fetch group mapping and names
@@ -107,12 +138,56 @@ const Groups: React.FC = () => {
     });
     console.log("Filtered posts:", filteredPosts);
 
+
+    const makeGroup = async () => {
+        try {
+
+            await axios.post("http://localhost:3000/group",{name:newGroupName.current,members:newGroupUsers,categories:newGroupCategories});
+            console.log("Successfully added group");
+            setGroups(newGroup?[...groups, newGroup]:groups);
+        }
+        catch(error){
+            console.error("Error adding group:", error);
+        }
+    };
+
+    console.log(users)
+
+    function selectUser(user){
+        setNewGroupUsers([...newGroupUsers,user]);
+    }
+    function selectCategory(cat){
+        console.log("WE CLICKED IT")
+        setNewGroupCategories([...newGroupCategories,cat]);
+    }
+
+
     return (
         <>
         <Navbar />
         <div style={{ padding: '2rem' }}>
             <h1>Groups Page</h1>
-            <label htmlFor="groupSelect">Select a group:</label>
+            <h2>Create Group</h2>
+            <form>
+                <label>Group Name</label>
+                <input type={"text"} onChange={(e)=> {
+                    newGroupName.current = e.target.value
+                }}></input>
+                <label>Select Categories: </label>{newGroupCategories.join(", ")}
+                <select onChange={(e)=>selectCategory(e.target.value)}>
+                    {categories.map((category,index) => (
+                        <option key={index} value={category} onClick={()=>selectCategory(category)}>{category}</option>
+                    ))}
+                </select>
+                <label>Add Members: </label>{newGroupUsers.join(", ")}
+                <select onChange={(e)=>selectUser(e.target.value)}>
+                    {users.map((user,index) => (
+                        <option key={index} value={user.username} onClick={()=>selectUser(user.username)}>{user.username}</option>
+                    ))}
+                </select>
+                <button type={"submit"} onClick={makeGroup}>Create Group</button>
+            </form>
+            <h2><label htmlFor="groupSelect">Select a group:</label></h2>
             <select
             id="groupSelect"
             value={selectedGroup}
