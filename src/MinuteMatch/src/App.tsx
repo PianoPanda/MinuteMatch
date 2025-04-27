@@ -28,6 +28,7 @@ function App() {
                     description: post.text || "No description available",
                     postComments: post.postcomments || [], //todo; may not need the empty array for the implementation of the service card, can be removed if not needed
                     timestamp: post.timestamp,
+                    flagged: post.flagged || false,
                 }));
                 console.log(`${cleanedData.length} services fetched from the API`);
                 console.log(`${cleanedData.description} what is the data being inputed `)

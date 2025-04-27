@@ -383,6 +383,21 @@ app.get('/posts', async (req, res) => {
         res.status(200).json(posts);
 });
 
+app.post("/flag", async (req, res) => {
+    let {data,error} = await supabase
+        .from("posts")
+        .update({flagged:true})
+        .eq("postid",req.body.id)
+        .select();
+    if(error){
+        console.error('Error updating post:', error);
+        res.status(500).json({ error: 'Failed to update post' });
+    }
+    res.status(200).json(data);
+
+})
+
+
 const PORT = process.env.PORT || 3000;
 console.log(`${PORT} Print out the port number to see if this is even working`);
 app.listen(PORT, () => {
