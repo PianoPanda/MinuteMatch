@@ -57,6 +57,7 @@ app.post('/group', async (req, res) => {
         res.status(500).json(error)
         return;
     }
+    console.log(memberIDs)
     memberIDs = memberIDs.map(i=>i.userid)
     let {data:catIDs,error2} = await supabase
         .from("categories")
@@ -69,7 +70,8 @@ app.post('/group', async (req, res) => {
     let { data: group, error } = await supabase
         .from('group')
         .insert({groupname:req.body.name})
-        .select();//list of objects with groupname attr
+        .select()
+        .single();//list of objects with groupname attr
     if (error){
         console.error('Error adding group:', error);
         res.status(500).json({ message: 'Error adding group' });
@@ -209,6 +211,18 @@ app.get('/user', async (req, res) => {
     
       res.status(200).json(data);
 });
+
+app.get("/all_users", async (req,res)=>{
+    let {data, error} = await supabase
+        .from("users")
+        .select("*")
+    if(error){
+        console.error('Error fetching users:', error);
+        res.status(500).json({error: "Failed to fetch users"});
+    }
+    res.status(200).json(data);
+
+})
 
 // ** Add Users **
 app.post('/user', async (req, res) => {
