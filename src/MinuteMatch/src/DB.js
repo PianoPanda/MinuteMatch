@@ -431,7 +431,9 @@ app.get('/posts', async (req, res) => {
                 : null
         }));
 
-        res.status(200).json(posts);
+
+        // Return the posts data to the client
+        res.status(200).json(result.rows.map(orm_service));  // Send all posts as a JSON response
     } catch (error) {
         console.error('Error retrieving posts:', error);
         res.status(500).json({ error: 'Failed to fetch posts' });
