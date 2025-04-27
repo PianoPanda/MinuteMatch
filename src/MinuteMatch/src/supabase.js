@@ -62,8 +62,6 @@ app.post('/group', async (req, res) => {
     if(dupes.length > 0){
         res.status(500).json({message: "DUPLICATE GROUPNAME"})
     }
-
-
     //-------
 
     let {data:memberIDs,error1} = await supabase
