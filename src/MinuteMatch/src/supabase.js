@@ -46,6 +46,59 @@ app.get('/group', async (req, res) => {
     res.json(group);
 });
 
+app.post('/group', async (req, res) => {
+//name members categories
+    console.log(req.body);
+    let {data:memberIDs,error1} = await supabase
+        .from("users")
+        .select('userid')
+        .likeAnyOf("username",req.body.members)
+    if(error1){
+        res.status(500).json(error)
+        return;
+    }
+    memberIDs = memberIDs.map(i=>i.userid)
+    let {data:catIDs,error2} = await supabase
+        .from("categories")
+        .select('id')
+        .likeAnyOf("name",req.body.categories);
+    if (error2){res.status(500).json(error)
+    return;}
+    catIDs=catIDs.map((i)=>i.id)
+
+    let { data: group, error } = await supabase
+        .from('group')
+        .insert({groupname:req.body.name})
+        .select();//list of objects with groupname attr
+    if (error){
+        console.error('Error adding group:', error);
+        res.status(500).json({ message: 'Error adding group' });
+        return;
+    }
+
+    await memberIDs.forEach(async (id)=>{
+        console.log(group)
+        let {error} = await supabase
+            .from("group_members")
+            .insert({group_id:group.groupid,member_id:id})
+        if(error){
+            console.error('Error adding group:', error);
+        }
+    });
+
+    await catIDs.forEach(async (id)=>{
+        console.log(id)
+        let {error} = await supabase
+            .from("group_categories")
+            .insert({group_id:group.groupid,category_id:id})
+        if(error){
+            console.error('Error adding group:', error);
+        }
+    });
+
+    res.json(group);
+});
+
 // **Fetch Categories**
 app.get('/categories', async (req, res) => {
         console.log("Do we even reach the back end to get to the fetch function!!!!!!");
@@ -134,26 +187,16 @@ app.post('/categories', async (req, res) => {
 
 //** Get Users**
 // todo this will be implemented and used for the userlogin and also implemented and used for the ranking system**************************
-// app.get('/user', async (req, res) => {
-//     const {data, error} = await supabase
-//     .from('users')
-//     .select(`
-//         userid,
-//         username,
-//         password,
-//         email,
-//         ranking,
-//         verified,
-//         groups,
-//         last_active,
-//         flagged,
-//         reviews
-//       `)
-
-//     if(error){
-//         console.error("Error fetching users:",error);
-//         return res.status(500).json({error: "Failed to fetch users"});
-//     }
+app.get('/user', async (req, res) => {
+    const {data, error} = await supabase
+    .from('users')
+    .select (
+        "userid,username,email,ranking,verified,groups,last_active,flagged,reviews"
+    );
+    if(error){
+        console.error("Error fetching users:",error);
+        return res.status(500).json({error: "Failed to fetch users"});
+    }
 
 //     const users = data.map(user => ({
 //         ...user, //get all of the users from our data base
@@ -264,9 +307,7 @@ app.post('/user', async (req, res) => {
 // **Add a Post**
 app.post('/posts', upload.single('picture'), async (req, res) => {
         const { service, category, description, group} = req.body;
-        console.log(req.body);
         const picture = req.file ? req.file.buffer.toString("base64") : null; // <-- This is the fix: use the buffer instead of path
-        console.log(picture);
         if (!service) {
             return res.status(400).json({ error: 'Service type is required' });
         }
@@ -282,7 +323,6 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
             .from("group")
             .select("groupid")
             .eq("groupname",group).limit(1).single():null;
-        console.log(groupID);
         let {data:result,error} = await supabase
         .from('posts')
         .insert({servicetype:service,text:description,picture:picture,groupid:groupID?groupID.data.groupid:null})
@@ -334,11 +374,9 @@ app.get('/posts', async (req, res) => {
             console.error('Error retrieving posts:', error);
             res.status(500).json({ error: 'Failed to fetch posts' });
         }
-        console.log(result);
         // Convert the bytea (binary data) to base64 so frontend can use it
         const posts = result.map(post => {
             let base64;
-            console.log(post.post_categories[0])
             if(post.picture) {
                 //console.log(/^[0-9a-fA-F]+$/.test(post.picture.slice(2)));
                 //console.log(post.picture.slice(0, 20));
