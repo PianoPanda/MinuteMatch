@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Service } from "../../types"; // adjust the path as needed
 import "./ServiceCard.css";
 import { JSX } from "react/jsx-runtime";
+import axios from "axios";
 
 interface Comment {
     text: string;
@@ -29,6 +30,9 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
         setComment(""); // reset textarea
     };
     console.log("groupid",service.groupId);
+    async function flagService(s:Service){
+        await axios.post("http://localhost:3000/flag",{id:s.id})
+    }
     return (
         <div className="service-card">
             <div style={{ position: "relative", textAlign: "center", marginBottom: "1rem" }}>
@@ -58,6 +62,30 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
             >
                 📋
             </button>
+
+                {service.flagged?null:<button
+                    onClick={() => flagService(service)}
+                    title="Flag Post"
+                    style={{
+                        position: "absolute",
+                        right: 0,
+                        top: "50%",
+                        transform: "translateY(-50%) translateX(-100%)",
+                        width: "24px",
+                        height: "24px",
+                        background: "none",
+                        border: "1px solid #aaa",
+                        borderRadius: "4px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        padding: 0,
+                        fontSize: "14px",
+                    }}
+                >
+                    🚩
+                </button>}
             </div>
 
 
