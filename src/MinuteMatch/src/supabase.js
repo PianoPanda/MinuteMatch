@@ -188,22 +188,26 @@ app.post('/categories', async (req, res) => {
 //** Get Users**
 // todo this will be implemented and used for the userlogin and also implemented and used for the ranking system**************************
 app.get('/user', async (req, res) => {
-    const {data, error} = await supabase
+    console.log(req.query)
+    let {data, error} = await supabase
     .from('users')
     .select (
-        "userid,username,email,ranking,verified,groups,last_active,flagged,reviews"
-    );
+        "userid,username,email,ranking,verified,groups,last_active,flagged,reviews,password"
+    )
+        .eq("username",req.query.username)
+        .single();
+    console.log(data)
     if(error){
         console.error("Error fetching users:",error);
         return res.status(500).json({error: "Failed to fetch users"});
     }
-
-    const users = data.map(user => ({
+    data = {...data,Reviews: Array.isArray(data.Reviews)?data.Reviews:[]}
+    /*const users = data.map(user => ({
         ...user, //get all of the users from our data base
         Reviews: Array.isArray(user.Reviews) ? user.Reviews : []
-      }));
+      }));*/
     
-      res.status(200).json(users);
+      res.status(200).json(data);
 });
 
 // ** Add Users **
