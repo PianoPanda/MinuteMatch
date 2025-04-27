@@ -87,6 +87,20 @@ app.get('/api/posts', async (req, res) => {
             timestamp: post.TimeStamp,
         }));
         res.json(posts);
+
+    //     client = await pool.connect();
+    //     const checkDuplicates = await client.query('SELECT * FROM "group" WHERE groupname = $1', [groupName]);
+    //     if (checkDuplicates.rows.length > 0) {
+    //         return res.status(400).json({ message: `Group ${groupName} already exists` });
+    //     }
+
+    //     await client.query('INSERT INTO "group" (groupname) VALUES ($1)', [groupName]);
+    //     res.status(201).json({ message: `Group ${groupName} added successfully` });
+    // } catch (err) {
+    //     console.error('Error adding group:', err);
+    //     res.status(500).json({ message: 'Error adding group' });
+    // } finally {
+    //     if (client) client.release();
     });
 
 
@@ -104,7 +118,7 @@ app.post('/categories', async (req, res) => {
         console.error('Error adding category:', err);
         res.status(500).json({ message: 'Error adding category' });
     }
-    if (checkDuplicates.rows.length > 0) {
+    if (checkDuplicates.length > 0) {
         return res.status(400).json({ message: `Category ${categoryName} already exists` });
     }
     let {error2} = await supabase
@@ -312,46 +326,8 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
 //     }
 // });
 
-// app.get('/posts', async (req, res) => {
-//         let{data:result,error} = await supabase
-//         .from('posts')
-//         .select("*, post_categories (category_id:categories (*))");
-//         if(error){
-//             console.error('Error retrieving posts:', error);
-//             res.status(500).json({ error: 'Failed to fetch posts' });
-//         }
-//         console.log(result);
-//         // Convert the bytea (binary data) to base64 so frontend can use it
-//         const posts = result.map(post => {
-//             let base64;
-//             console.log(post.post_categories[0])
-//             if(post.picture) {
-//                 //console.log(/^[0-9a-fA-F]+$/.test(post.picture.slice(2)));
-//                 //console.log(post.picture.slice(0, 20));
-//                 //console.log(Buffer.from(post.picture.slice(2), "base64"))//TODO: IT IS LOGGING THE HEX BYTES FOR BASE64 FOR A PDF
-//             }
-//             base64 = post.picture ? Buffer.from(post.picture, "base64").toString("base64") : null;
-//             //if(post.picture){console.log(base64.slice(0,50));}//TODO: the buffer is GETTING WRITTEN IN AS A JSON STRING BRUH FIX THIS
-//             let catArr = post.post_categories.map(postcat => {
-//                 return postcat.category_id.name;
-//             })
-//             return {...
-//                 post,
-//                 category:catArr,
-//                     picture
-//             :
-//                 post.picture
-//                     ? `data:application/octet-stream;base64,${base64}`
-//                     : null
-//             }
-//         });
-//         //console.log(posts);
-//         res.status(200).json(posts);
-// });
 app.get('/posts', async (req, res) => {
-    const { groupId } = req.query;
-
-    let query = supabase
+        let{data:result,error} = await supabase
         .from('posts')
         .select("*, post_categories (category_id:categories (*)), groupid:group (*)");
         if(error){
@@ -387,103 +363,6 @@ app.get('/posts', async (req, res) => {
         //console.log(posts);
         res.status(200).json(posts);
 });
-
-// ***Posts the Reviews of the Users to users table***
-//todo: Preston come back and clean up the set up of this instance
-app.post('/reviews', async (req, res) => {
-    const { reviewer, who_ranked, post_ID, text, category, score } = req.body;
-  
-    console.log("Incoming review payload:", req.body);
-  
-    if (!reviewer || !who_ranked || !category || score == null) {
-      return res.status(400).json({ error: "Missing fields in request" });
-    }
-  
-    if (reviewer.trim().toLowerCase() === who_ranked.trim().toLowerCase()) {
-      return res.status(400).json({ error: "You cannot review yourself" });
-    }
-  
-    const normalizedUsername = who_ranked.trim().toLowerCase();
-  
-    const { data: userMatchData, error: fetchError } = await supabase
-      .from('users')
-      .select('userid, username, reviews')
-      .ilike('username', normalizedUsername); // case-insensitive match
-  
-    if (fetchError || !userMatchData || userMatchData.length === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
-  
-    const userData = userMatchData[0];
-  
-    let existingReviews = [];
-    if (Array.isArray(userData.reviews)) {
-      existingReviews = userData.reviews;
-    } else if (typeof userData.reviews === "object" && userData.reviews !== null) {
-      existingReviews = [userData.reviews];
-    }
-  
-    const newReview = {
-      reviewer,
-      post_ID,
-      text,
-      category,
-      score,
-      timestamp: new Date().toISOString()
-    };
-  
-    existingReviews.push(newReview);
-  
-    // Calculate new overall ranking (average of all scores)
-    const scores = existingReviews.map(r => r.score);
-    const avgRanking = scores.reduce((sum, s) => sum + s, 0) / scores.length;
-  
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({
-        reviews: existingReviews,
-        ranking: avgRanking
-      })
-      .eq('userid', userData.userid)
-      .select('', { count: 'exact', head: true });
-  
-    if (updateError) {
-      return res.status(500).json({ error: "Failed to update user reviews/rank" });
-    }
-  
-    return res.status(200).json({ message: "Review and ranking updated successfully" });
-  });
-
-//     let query = supabase
-//         .from('posts')
-//         .select("*, post_categories (category_id:categories (*))");
-
-//     if (groupId) {
-//         query = query.eq("groupid", groupId);
-//     }
-
-//     const { data: result, error } = await query;
-
-//     if (error) {
-//         console.error('Error retrieving posts:', error);
-//         return res.status(500).json({ error: 'Failed to fetch posts' });
-//     }
-
-//     const posts = result.map(post => {
-//         const base64 = post.picture ? Buffer.from(post.picture, "base64").toString("base64") : null;
-//         const catArr = post.post_categories.map(postcat => postcat.category_id.name);
-
-//         return {
-//             ...post,
-//             category: catArr,
-//             picture: post.picture
-//                 ? `data:application/octet-stream;base64,${base64}`
-//                 : null
-//         };
-//     });
-
-//     res.status(200).json(posts);
-// });
 
 // ***Posts the Reviews of the Users to users table***
 //todo: Preston come back and clean up the set up of this instance
@@ -593,102 +472,6 @@ app.post('/reviews', async (req, res) => {
   
     res.status(200).json(filtered);
   });
-
-// app.get('/posts', async (req, res) => {
-//         let{data:result,error} = await supabase
-//         .from('posts')
-//         .select("*, post_categories (category_id:categories (*))");
-//         if(error){
-//             console.error('Error retrieving posts:', error);
-//             res.status(500).json({ error: 'Failed to fetch posts' });
-//         }
-//         console.log(result);
-//         // Convert the bytea (binary data) to base64 so frontend can use it
-//         const posts = result.map(post => {
-//             let base64;
-//             console.log(post.post_categories[0])
-//             if(post.picture) {
-//                 //console.log(/^[0-9a-fA-F]+$/.test(post.picture.slice(2)));
-//                 //console.log(post.picture.slice(0, 20));
-//                 //console.log(Buffer.from(post.picture.slice(2), "base64"))//TODO: IT IS LOGGING THE HEX BYTES FOR BASE64 FOR A PDF
-//             }
-//             base64 = post.picture ? Buffer.from(post.picture, "base64").toString("base64") : null;
-//             //if(post.picture){console.log(base64.slice(0,50));}//TODO: the buffer is GETTING WRITTEN IN AS A JSON STRING BRUH FIX THIS
-//             let catArr = post.post_categories.map(postcat => {
-//                 return postcat.category_id.name;
-//             })
-//             return {...
-//                 post,
-//                 category:catArr,
-//                     picture
-//             :
-//                 post.picture
-//                     ? `data:application/octet-stream;base64,${base64}`
-//                     : null
-//             }
-//         });
-//         //console.log(posts);
-//         res.status(200).json(posts);
-// });
-app.get('/posts', async (req, res) => {
-    const { groupId } = req.query;
-
-    let query = supabase
-        .from('posts')
-        .select("*, post_categories (category_id:categories (*)), groupid:group (*)");
-
-        if (groupId) {
-            query = query.eq("groupid", groupId);
-        }
-    
-        const { data: result, error } = await query;
-
-        if(error){
-            console.error('Error retrieving posts:', error);
-            res.status(500).json({ error: 'Failed to fetch posts' });
-        }
-        console.log(result);
-        // Convert the bytea (binary data) to base64 so frontend can use it
-        const posts = result.map(post => {
-            let base64;
-            console.log(post.post_categories[0])
-            if(post.picture) {
-                //console.log(/^[0-9a-fA-F]+$/.test(post.picture.slice(2)));
-                //console.log(post.picture.slice(0, 20));
-                //console.log(Buffer.from(post.picture.slice(2), "base64"))//TODO: IT IS LOGGING THE HEX BYTES FOR BASE64 FOR A PDF
-            }
-            base64 = post.picture ? Buffer.from(post.picture, "base64").toString("base64") : null;
-            //if(post.picture){console.log(base64.slice(0,50));}//TODO: the buffer is GETTING WRITTEN IN AS A JSON STRING BRUH FIX THIS
-            let catArr = post.post_categories.map(postcat => {
-                return postcat.category_id.name;
-            })
-            return {...
-                post,
-                groupId:post.groupid?post.groupid.groupname:null,
-                category:catArr,
-                    picture
-            :
-                post.picture
-                    ? `data:application/octet-stream;base64,${base64}`
-                    : null
-            }
-        });
-        //console.log(posts);
-        res.status(200).json(posts);
-});
-
-
-// Required to resolve __dirname in ES modules
-// const __filename = fileURLToPath(import.meta.url); 
-// const __dirname = dirname(__filename); 
-
-// // Serve static files from frontend build
-// app.use(express.static(path.join(__dirname, 'dist'))); 
-
-// // Catch-all: send index.html for React Router to handle
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'dist', 'index.html')); 
-// });
 
 const PORT = process.env.PORT || 3000;
 console.log(`${PORT} Print out the port number to see if this is even working`);
