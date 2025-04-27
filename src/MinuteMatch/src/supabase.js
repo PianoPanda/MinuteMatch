@@ -49,6 +49,23 @@ app.get('/group', async (req, res) => {
 app.post('/group', async (req, res) => {
 //name members categories
     console.log(req.body);
+
+    //check duplicates
+    let {data:dupes,error3} = await supabase
+        .from("group")
+        .select('*')
+        .eq("groupname",req.body.groupname);
+    if (error3){
+        console.error('Error fetching group:', error);
+        res.status(500).json({ message: 'Error finding dupes' });
+    }
+    if(dupes.length > 0){
+        res.status(500).json({message: "DUPLICATE GROUPNAME"})
+    }
+
+
+    //-------
+
     let {data:memberIDs,error1} = await supabase
         .from("users")
         .select('userid')
