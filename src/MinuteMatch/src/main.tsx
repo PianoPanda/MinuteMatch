@@ -3,41 +3,47 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import './index.css'
 import App from './App.tsx'
 import Navbar from "./components/Navbar.tsx";
-import PostService from "./PostService.tsx"
+import PostService from "./PostService.tsx";
 import RequestService from "./RequestService.tsx";
 import Login from "./components/pages/Login.tsx";
 import UserAccount from "./UserAccount.tsx";
 import GroupPage from "./GroupPage.tsx";
 import Groups from './Groups.tsx';
-import { JSX } from 'react';
 import Categories from './Categories.tsx';
+import { JSX } from 'react';
 
 const root = document.getElementById("root");
 
+// ProtectedRoute checks if the user is authenticated
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const isAuthenticated = localStorage.getItem('authenticated') === 'true';
   const location = useLocation();
 
   if (!isAuthenticated) {
+    // If not authenticated, redirect to login page
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;
 }
 
-
 createRoot(root!).render(
   <BrowserRouter>
     <Routes>
-      <Route path="/login" element={<Login />} />
+      {/* Redirect from "/" to "/login" */}
       <Route path="/" element={
         <ProtectedRoute>
           <>
             <Navbar />
             <App />
           </>
-        </ProtectedRoute>
+          </ProtectedRoute>
       } />
+
+      {/* Public route: login page */}
+      <Route path="/login" element={<Login />} />
+
+      {/* Protected routes */}
       <Route path="/post-service" element={
         <ProtectedRoute>
           <>

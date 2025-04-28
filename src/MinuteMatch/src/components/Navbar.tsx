@@ -35,8 +35,6 @@
 // };
 
 // export default Navbar;
-
-// export default Navbar;
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 
