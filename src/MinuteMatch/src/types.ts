@@ -11,4 +11,5 @@ export interface Service {
     description: string;
     postComments: string[];
     timestamp: string;
+    flagged:boolean;
 }

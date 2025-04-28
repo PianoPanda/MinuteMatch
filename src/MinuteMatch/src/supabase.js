@@ -46,6 +46,76 @@ app.get('/group', async (req, res) => {
     res.json(group);
 });
 
+app.post('/group', async (req, res) => {
+//name members categories
+    console.log(req.body);
+
+    //check duplicates
+    let {data:dupes,error3} = await supabase
+        .from("group")
+        .select('*')
+        .eq("groupname",req.body.groupname);
+    if (error3){
+        console.error('Error fetching group:', error);
+        res.status(500).json({ message: 'Error finding dupes' });
+    }
+    if(dupes.length > 0){
+        res.status(500).json({message: "DUPLICATE GROUPNAME"})
+    }
+    //-------
+
+    let {data:memberIDs,error1} = await supabase
+        .from("users")
+        .select('userid')
+        .likeAnyOf("username",req.body.members)
+    if(error1){
+        res.status(500).json(error)
+        return;
+    }
+    console.log(memberIDs)
+    memberIDs = memberIDs.map(i=>i.userid)
+    let {data:catIDs,error2} = await supabase
+        .from("categories")
+        .select('id')
+        .likeAnyOf("name",req.body.categories);
+    if (error2){res.status(500).json(error)
+    return;}
+    catIDs=catIDs.map((i)=>i.id)
+
+    let { data: group, error } = await supabase
+        .from('group')
+        .insert({groupname:req.body.name})
+        .select()
+        .single();//list of objects with groupname attr
+    if (error){
+        console.error('Error adding group:', error);
+        res.status(500).json({ message: 'Error adding group' });
+        return;
+    }
+
+    await memberIDs.forEach(async (id)=>{
+        console.log(group)
+        let {error} = await supabase
+            .from("group_members")
+            .insert({group_id:group.groupid,member_id:id})
+        if(error){
+            console.error('Error adding group:', error);
+        }
+    });
+
+    await catIDs.forEach(async (id)=>{
+        console.log(id)
+        let {error} = await supabase
+            .from("group_categories")
+            .insert({group_id:group.groupid,category_id:id})
+        if(error){
+            console.error('Error adding group:', error);
+        }
+    });
+
+    res.json(group);
+});
+
 // **Fetch Categories**
 app.get('/categories', async (req, res) => {
         console.log("Do we even reach the back end to get to the fetch function!!!!!!");
@@ -134,139 +204,91 @@ app.post('/categories', async (req, res) => {
 
 //** Get Users**
 // todo this will be implemented and used for the userlogin and also implemented and used for the ranking system**************************
-// app.get('/user', async (req, res) => {
-//     const {data, error} = await supabase
-//     .from('users')
-//     .select(`
-//         userid,
-//         username,
-//         password,
-//         email,
-//         ranking,
-//         verified,
-//         groups,
-//         last_active,
-//         flagged,
-//         reviews
-//       `)
-
-//     if(error){
-//         console.error("Error fetching users:",error);
-//         return res.status(500).json({error: "Failed to fetch users"});
-//     }
-
-//     const users = data.map(user => ({
-//         ...user, //get all of the users from our data base
-//         Reviews: Array.isArray(user.Reviews) ? user.Reviews : []
-//       }));
-    
-//       res.status(200).json(users);
-// });
-
 app.get('/user', async (req, res) => {
-    const { username } = req.query;
-    if (!username) {
-      return res.status(400).json({ error: "Username query parameter is required" });
+    console.log(req.query)
+    let {data, error} = await supabase
+    .from('users')
+    .select (
+        "userid,username,email,ranking,verified,groups,last_active,flagged,reviews,password"
+    )
+        .eq("username",req.query.username)
+        .single();
+    console.log(data)
+    if(error){
+        console.error("Error fetching users:",error);
+        return res.status(500).json({error: "Failed to fetch users"});
     }
-  
-    const { data, error } = await supabase
-      .from('users')
-      .select(`
-        userid,
-        username,
-        password,
-        email,
-        ranking,
-        verified,
-        groups,
-        last_active,
-        flagged,
-        reviews
-      `)
-      .eq('username', username)
-      .single();
-  
-    if (error) {
-      console.error("Error fetching user:", error);
-      return res.status(500).json({ error: "Failed to fetch user" });
+    data = {...data,Reviews: Array.isArray(data.Reviews)?data.Reviews:[]}
+    /*const users = data.map(user => ({
+        ...user, //get all of the users from our data base
+        Reviews: Array.isArray(user.Reviews) ? user.Reviews : []
+      }));*/
+    
+      res.status(200).json(data);
+});
+
+app.get("/all_users", async (req,res)=>{
+    let {data, error} = await supabase
+        .from("users")
+        .select("*")
+    if(error){
+        console.error('Error fetching users:', error);
+        res.status(500).json({error: "Failed to fetch users"});
     }
-    if (!data) {
-      return res.status(404).json({ error: "User not found" });
-    }
-  
-    // ← FIX: always return reviews as an array
-    const user = {
-      ...data,
-      reviews: Array.isArray(data.reviews) ? data.reviews : []
-    };
-  
-    res.status(200).json(user);
-  });
+    res.status(200).json(data);
+
+})
 
 // ** Add Users **
 app.post('/user', async (req, res) => {
-    try {
-        const {
-            username,
-            email = null,
-            password,
-            ranking = 0,
-            verified = false,
-            groups = [],
-            reviews = []
-        } = req.body;
-        // console.log("\n177: "+username)
-        // console.log("\n178: "+password)
-        if (!username || !password) {
-            return res.status(400).json({ error: "Username and Password are required" });
-        }
-
-        const { data, error } = await supabase
-            .from('users')
-            .insert([
-                {
-                    username,
-                    email,
-                    password,
-                    ranking,
-                    verified,
-                    groups,
-                    reviews,
-                    last_active: new Date().toISOString(),
-                    flagged: false
-                }
-            ])
-            .select()
-            .single();
-
-        if (error) {
-            console.error('Supabase error:', {
-                message: error.message,
-                details: error.details,
-                hint: error.hint,
-                code: error.code
-            });
-            return res.status(500).json({
-                error: error.message || 'Insert failed',
-                details: error.details,
-                hint: error.hint,
-                code: error.code
-            });
-        }
-
-        res.status(201).json({ user: data });
-    } catch (err) {
-        console.error('Server error:', err);
-        res.status(500).json({ error: "Server error" });
+    const {
+        //todo these values need to double check the implementation of the code for this instance
+      UserID,
+      Username,
+      Email,
+      Password,
+      Ranking = 0,
+      Verified = false,
+      Groups = [],
+      Last_active = new Date().toISOString(),
+      Flagged = false,
+      Reviews = []
+    } = req.body;
+  
+    if (!UserID || !Username || !Password) {
+      return res.status(400).json({ error: "Missing required fields (UserID, Username, Password)" });
     }
-});
+  
+    const { data, error } = await supabase
+      .from('user')
+      .insert([
+        {
+          userID,
+          username,
+          email,
+          password,
+          ranking,
+          verified,
+          groups,
+          last_active,
+          flagged,
+          reviews
+        }
+      ]);
+  
+    if (error) {
+      console.error("Error adding user:", error);
+      return res.status(500).json({ error: "Failed to add user" });
+    }
+  
+    res.status(201).json({ message: "User added successfully", user: data[0] });
+  });
+
 
 // **Add a Post**
 app.post('/posts', upload.single('picture'), async (req, res) => {
         const { service, category, description, group} = req.body;
-        console.log(req.body);
         const picture = req.file ? req.file.buffer.toString("base64") : null; // <-- This is the fix: use the buffer instead of path
-        console.log(picture);
         if (!service) {
             return res.status(400).json({ error: 'Service type is required' });
         }
@@ -282,7 +304,6 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
             .from("group")
             .select("groupid")
             .eq("groupname",group).limit(1).single():null;
-        console.log(groupID);
         let {data:result,error} = await supabase
         .from('posts')
         .insert({servicetype:service,text:description,picture:picture,groupid:groupID?groupID.data.groupid:null})
@@ -334,11 +355,9 @@ app.get('/posts', async (req, res) => {
             console.error('Error retrieving posts:', error);
             res.status(500).json({ error: 'Failed to fetch posts' });
         }
-        console.log(result);
         // Convert the bytea (binary data) to base64 so frontend can use it
         const posts = result.map(post => {
             let base64;
-            console.log(post.post_categories[0])
             if(post.picture) {
                 //console.log(/^[0-9a-fA-F]+$/.test(post.picture.slice(2)));
                 //console.log(post.picture.slice(0, 20));
@@ -364,114 +383,20 @@ app.get('/posts', async (req, res) => {
         res.status(200).json(posts);
 });
 
-// ***Posts the Reviews of the Users to users table***
-//todo: Preston come back and clean up the set up of this instance
-app.post('/reviews', async (req, res) => {
-    const { reviewer, who_ranked, post_ID, text, category, score } = req.body;
-  
-    console.log("Incoming review payload:", req.body);
-  
-    if (!reviewer || !who_ranked || !category || score == null) {
-      return res.status(400).json({ error: "Missing fields in request" });
+app.post("/flag", async (req, res) => {
+    let {data,error} = await supabase
+        .from("posts")
+        .update({flagged:true})
+        .eq("postid",req.body.id)
+        .select();
+    if(error){
+        console.error('Error updating post:', error);
+        res.status(500).json({ error: 'Failed to update post' });
     }
-  
-    if (reviewer.trim().toLowerCase() === who_ranked.trim().toLowerCase()) {
-      return res.status(400).json({ error: "You cannot review yourself" });
-    }
-  
-    const normalizedUsername = who_ranked.trim().toLowerCase();
-  
-    const { data: userMatchData, error: fetchError } = await supabase
-      .from('users')
-      .select('userid, username, reviews')
-      .ilike('username', normalizedUsername); // case-insensitive match
-  
-    if (fetchError || !userMatchData || userMatchData.length === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
-  
-    const userData = userMatchData[0];
-  
-    let existingReviews = [];
-    if (Array.isArray(userData.reviews)) {
-      existingReviews = userData.reviews;
-    } else if (typeof userData.reviews === "object" && userData.reviews !== null) {
-      existingReviews = [userData.reviews];
-    }
-  
-    const newReview = {
-      reviewer,
-      post_ID,
-      text,
-      category,
-      score,
-      timestamp: new Date().toISOString()
-    };
-  
-    existingReviews.push(newReview);
-  
-    // Calculate new overall ranking (average of all scores)
-    const scores = existingReviews.map(r => r.score);
-    const avgRanking = scores.reduce((sum, s) => sum + s, 0) / scores.length;
-  
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({
-        reviews: existingReviews,
-        ranking: avgRanking
-      })
-      .eq('userid', userData.userid)
-      .select('', { count: 'exact', head: true });
-  
-    if (updateError) {
-      return res.status(500).json({ error: "Failed to update user reviews/rank" });
-    }
-  
-    return res.status(200).json({ message: "Review and ranking updated successfully" });
-  });
+    res.status(200).json(data);
 
-  //****** This is a lazy fix just to get all of the users */
-  app.get("/usernames", async (req, res) => {
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("username");
-  
-      if (error) throw error;
-  
-      const usernames = data.map(user => user.username);
-      res.json(usernames); // returns ["user1", "user2", ...]
-    } catch (err) {
-      console.error("Error fetching usernames:", err);
-      res.status(500).json({ error: "Failed to fetch usernames" });
-    }
-  });
-  //****lazy way of just getting all the user and seeing there text review */
-  app.get('/userreview', async (req, res) => {
-    const { username, category } = req.query;
-  
-    if (!username) {
-      return res.status(400).json({ error: "Username is required" });
-    }
-  
-    const { data, error } = await supabase
-      .from('users')
-      .select('reviews')
-      .eq('username', username)
-      .maybeSingle();
-  
-    if (error || !data) {
-      console.error("Failed to fetch reviews:", error);
-      return res.status(500).json({ error: "Could not fetch user reviews" });
-    }
-  
-    const allReviews = Array.isArray(data.reviews) ? data.reviews : [];
-    const filtered = category
-      ? allReviews.filter(r => r.category?.toLowerCase() === category.toLowerCase())
-      : allReviews;
-  
-    res.status(200).json(filtered);
-  });
+})
+
 
 const PORT = process.env.PORT || 3000;
 console.log(`${PORT} Print out the port number to see if this is even working`);

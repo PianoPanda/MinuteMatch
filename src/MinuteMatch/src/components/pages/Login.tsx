@@ -85,6 +85,7 @@ export default function Login() {
 
       const res = await fetch(`${API_URL}/user?username=${encodeURIComponent(username)}`);
       const user = await res.json();
+      console.log(user);
   
       if (!user || !user.password) {
         setError('User not found');
