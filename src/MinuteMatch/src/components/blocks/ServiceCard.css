@@ -21,7 +21,7 @@
     text-align: center;
 }
 
-/* ✅ Center the image/iframe */
+/* Center the image/iframe */
 .service-card img,
 .service-card iframe {
     display: block;
@@ -41,7 +41,7 @@
     text-align: center;
 }
 
-/* ✅ Make sure comment box stays neatly inside */
+/* Make sure comment box stays neatly inside */
 .service-card .comments {
     margin-top: 10px;
     background-color: #2c2c2c;
@@ -60,7 +60,7 @@
     border-bottom: none;
 }
 
-/* ✅ Make textarea fill the container but stay inside boundaries */
+/* Make textarea fill the container but stay inside boundaries */
 textarea {
     margin-top: 10px;
     padding: 10px;

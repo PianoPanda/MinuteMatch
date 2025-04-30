@@ -92,7 +92,7 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
             {/* Display the picture if it exists */}
             {service.picture ? (
                 service.picture.startsWith("data:application")
-                ? <img src={service.picture} alt="service" style={{ width: "300px" }} />
+                ? <img src={service.picture} alt="service" style={{ width: "600px" }} />
                 : <>
                 <iframe src={service.picture} width="400" height="500" title="file-view" />
                 {console.log('\n')}
