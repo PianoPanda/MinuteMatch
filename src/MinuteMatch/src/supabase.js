@@ -397,6 +397,37 @@ app.post("/flag", async (req, res) => {
 
 })
 
+app.post("/unflag", async (req, res) => {
+    const { postId, userId } = req.body; //postId is correct now, userId is still incorrect
+
+    console.log("Received postId:", postId, "and userId:", userId); // Debug
+
+    // Check if user is admin
+    const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("isAdmin")
+        .eq("userid", userId)
+        .single();
+
+    console.log("User Data:", user, "Error:", userError); // Debug
+
+    if (userError || !user?.isAdmin) {
+        return res.status(403).json({ error: 'Unauthorized user' });
+    }
+
+    const { data: result, error } = await supabase
+        .from("posts")
+        .update({ flagged: false })
+        .eq("postid", postId)
+        .select();
+
+    if (error) {
+        return res.status(500).json({ error: 'Failed to unflag post' });
+    }
+
+    res.status(200).json(result);
+});
+
 
 const PORT = process.env.PORT || 3000;
 console.log(`${PORT} Print out the port number to see if this is even working`);

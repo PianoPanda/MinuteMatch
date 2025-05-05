@@ -46,7 +46,7 @@ function App() {
             <h1>WELCOME TO MINUTEMATCH</h1>
             {services.length > 0 ? (
                 services.reverse().map((service) => (
-                    <ServiceCard key={service.id} service={service} />
+                    <ServiceCard key={service.id} service={service} userId={"58869f65-9320-4375-b2c2-371210e560b0"} isAdmin={true}/> //Need a way to get local session's userId and 'isAdmin' value
                 ))
             ) : (
                 <p>Loading services...</p>

@@ -1,5 +1,4 @@
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
 import { Service } from "../../types"; // adjust the path as needed
 import "./ServiceCard.css";
 import { JSX } from "react/jsx-runtime";
@@ -10,7 +9,8 @@ interface Comment {
     timestamp: string;
 }
 
-function ServiceCard({ service }: { service: Service }): JSX.Element {
+function ServiceCard({ service, userId, isAdmin }: { service: Service, userId: string, isAdmin: boolean }): JSX.Element {
+    console.log(service)
     const [comment, setComment] = useState("");
     const [comments, setComments] = useState<Comment[]>([]);
 
@@ -19,58 +19,43 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
 
         console.log("New comment:", comment);
         const timestamp = new Date().toLocaleString();
-        const comment_yay: Comment = {
-            text: comment,
-            timestamp: timestamp,
-          };
-        const newComment: Comment = comment_yay;
+        const newComment: Comment = { text: comment, timestamp: timestamp };
 
         setComments([...comments, newComment]); // add new comment to list
-        //TODO: Comments don't update database
-        setComment(""); // reset textarea
+        // TODO: Comments don't update the database
+        setComment(""); // reset the textarea
     };
-    console.log("groupid",service.groupId);
-    async function flagService(s:Service){
-        await axios.post("http://localhost:3000/flag",{id:s.id})
+
+    const flagService = async (s: Service) => {
+        await axios.post("http://localhost:3000/flag", { id: s.id });
+    };
+
+    const unflagService = async (s: Service) => {
+        try {
+            console.log(s) //this is correct
+            console.log(s.id)
+            console.log(userId)
+            await axios.post("http://localhost:3000/unflag", { postId: s.id, userId });
+            // Optionally refresh or adjust the state here to reflect the change.
+        } catch (error) {
+            console.error("Error unflagging service:", error);
+        }
     }
+
     return (
         <div className="service-card">
             <div style={{ position: "relative", textAlign: "center", marginBottom: "1rem" }}>
-            <h3 style={{ margin: 0, color:service.ServiceType ? "#9A3131":"white"}}>
-                {service.ServiceType ? 'Service Post' : 'General Post'}
-            </h3>
-            <button
-                onClick={() => navigator.clipboard.writeText(String(service.id))}
-                title="Copy Post ID"
-                style={{
-                position: "absolute",
-                right: 0,
-                top: "50%",
-                transform: "translateY(-50%)",
-                width: "24px",
-                height: "24px",
-                background: "none",
-                border: "1px solid #aaa",
-                borderRadius: "4px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                padding: 0,
-                fontSize: "14px",
-                }}
-            >
-                📋
-            </button>
-
-                {service.flagged?null:<button
-                    onClick={() => flagService(service)}
-                    title="Flag Post"
+                <h3 style={{ margin: 0, color:service.ServiceType ? "#9A3131":"white"}}>
+                    {service.ServiceType ? 'Service Post' : 'General Post'}
+                </h3>
+                <button
+                    onClick={() => navigator.clipboard.writeText(String(service.id))}
+                    title="Copy Post ID"
                     style={{
                         position: "absolute",
                         right: 0,
                         top: "50%",
-                        transform: "translateY(-50%) translateX(-100%)",
+                        transform: "translateY(-50%)",
                         width: "24px",
                         height: "24px",
                         background: "none",
@@ -84,34 +69,82 @@ function ServiceCard({ service }: { service: Service }): JSX.Element {
                         fontSize: "14px",
                     }}
                 >
-                    🚩
-                </button>}
-            </div>
+                    📋
+                </button>
 
+                {service.flagged ? (
+                    isAdmin && (
+                        <button
+                            onClick={() => unflagService(service)}
+                            title="Unflag Post"
+                            style={{
+                                position: "absolute",
+                                right: 0,
+                                top: "50%",
+                                transform: "translateY(-50%) translateX(-100%)",
+                                width: "24px",
+                                height: "24px",
+                                background: "none",
+                                border: "1px solid red",
+                                borderRadius: "4px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                cursor: "pointer",
+                                padding: 0,
+                                fontSize: "14px",
+                            }}
+                        >
+                            ❌
+                        </button>
+                    )
+                ) : (
+                    <button
+                        onClick={() => flagService(service)}
+                        title="Flag Post"
+                        style={{
+                            position: "absolute",
+                            right: 0,
+                            top: "50%",
+                            transform: "translateY(-50%) translateX(-100%)",
+                            width: "24px",
+                            height: "24px",
+                            background: "none",
+                            border: "1px solid #aaa",
+                            borderRadius: "4px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: "pointer",
+                            padding: 0,
+                            fontSize: "14px",
+                        }}
+                    >
+                        🚩
+                    </button>
+                )}
+            </div>
 
             {/* Display the picture if it exists */}
             {service.picture ? (
-                service.picture.startsWith("data:application")
-                ? <img src={service.picture} alt="service" style={{ width: "600px" }} />
-                : <>
-                <iframe src={service.picture} width="400" height="500" title="file-view" />
-                {console.log('\n')}
-                </>
+                service.picture.startsWith("data:application") ? (
+                    <img src={service.picture} alt="service" style={{ width: "600px" }} />
+                ) : (
+                    <>
+                        <iframe src={service.picture} width="400" height="500" title="file-view" />
+                        {console.log('\n')}
+                    </>
+                )
             ) : (
-                // console.log(`${service.picture}`),
-                // console.log(`${service.user.id}`),
-                // console.log(`${service.user}`),
                 <p>No picture available</p>
             )}
 
-            {/* TODO: This is broken: */}
-            {/* <i>Posted by: <b>{service.user.id}</b></i>  */} 
             {service.groupId && <p><i>Group: {service.groupId}</i></p>}
             {service.category && service.category.length > 0 && (
                 <p><i>Categories: {service.category.join(', ')}</i></p>
             )}
             <p>{service.description}</p>
-            <p><i>Posted on: {new Date(service.timestamp).toLocaleString()}</i></p> {/*'Posted on' label*/}
+            <p><i>Posted on: {new Date(service.timestamp).toLocaleString()}</i></p> {/* 'Posted on' label */}
 
             {/* Display the comments that have been posted to a post */}
             {comments.map((c, index) => (
