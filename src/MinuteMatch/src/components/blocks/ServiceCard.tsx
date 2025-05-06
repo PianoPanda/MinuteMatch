@@ -10,7 +10,7 @@ interface Comment {
 }
 
 function ServiceCard({ service, userId, isAdmin }: { service: Service, userId: string, isAdmin: boolean }): JSX.Element {
-    console.log(service)
+    // console.log(service)
     const [comment, setComment] = useState("");
     const [comments, setComments] = useState<Comment[]>([]);
 
@@ -35,7 +35,10 @@ function ServiceCard({ service, userId, isAdmin }: { service: Service, userId: s
             console.log(s) //this is correct
             console.log(s.id)
             console.log(userId)
-            await axios.post("http://localhost:3000/unflag", { postId: s.id, userId });
+            // console.log("ServiceCard 38:", isAdmin)
+            if (isAdmin) {
+              await axios.post("http://localhost:3000/unflag", { postId: s.id, userId });
+            }
             // Optionally refresh or adjust the state here to reflect the change.
         } catch (error) {
             console.error("Error unflagging service:", error);

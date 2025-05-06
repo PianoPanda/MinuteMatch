@@ -8,12 +8,14 @@ import axios from "axios";
 function App() {
     const [services, setServices] = useState<Service[]>([]);
 
+    const userId = localStorage.getItem('userId') || "defaultUserId";
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
     useEffect(() => {
         const fetch_services = async () => {
             try {
                 const response = await axios.get("http://localhost:3000/posts");
                 // Map response data to match the Service type
-                console.log(`${response.data}`)
+                // console.log(`${response.data}`)
                 const cleanedData = response.data.map((post: any) => ({
                     id: post.postid,
                     ServiceType: post.servicetype,
@@ -46,7 +48,7 @@ function App() {
             <h1>WELCOME TO MINUTEMATCH</h1>
             {services.length > 0 ? (
                 services.reverse().map((service) => (
-                    <ServiceCard key={service.id} service={service} userId={"58869f65-9320-4375-b2c2-371210e560b0"} isAdmin={true}/> //Need a way to get local session's userId and 'isAdmin' value
+                    <ServiceCard key={service.id} service={service} userId={userId} isAdmin={isAdmin}/>
                 ))
             ) : (
                 <p>Loading services...</p>

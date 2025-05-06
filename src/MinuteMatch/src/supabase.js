@@ -3,7 +3,6 @@ import cors from 'cors';
 import multer from 'multer';  // for the file uploads
 
 
-
 import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = 'https://swzbqpnkyetlzdovujon.supabase.co'
 const supabaseKey = process.env.SUPABASE_KEY
