@@ -24,6 +24,10 @@ In the src/MinuteMatch directory, create a .env file with the following contents
 VITE_SUPABASE_URL=https://swzbqpnkyetlzdovujon.supabase.co
 VITE_SUPABASE_KEY=<supabase-key>
 ```
+# In order to run the code:
+- Open two terminals and make sure you are in the path CS 320 SWE\MinuteMatch\src\MinuteMatch\src>
+- in one terminal run node supabase.js first and it should run the servers
+- in the seconde terminal open and make sure it is in the same path and run the npm run dev and ctrl+click  the link to open and run
 
 -Install Supabase: `npm install @supabase/supabase-js`
 -to run code: `npm run dev` in one terminal and `node supabase.js` to run the server
