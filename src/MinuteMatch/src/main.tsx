@@ -1,13 +1,15 @@
-import { createRoot } from 'react-dom/client'
+
+
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import './index.css'
-import App from './App.tsx'
+import './index.css';
+import App from './App.tsx';
 import Navbar from "./components/Navbar.tsx";
 import PostService from "./PostService.tsx";
 import RequestService from "./RequestService.tsx";
 import Login from "./components/pages/Login.tsx";
 import UserAccount from "./UserAccount.tsx";
-import GroupPage from "./GroupPage.tsx";
+import ReviewUser from "./ReviewUser.tsx"; 
 import Groups from './Groups.tsx';
 import Categories from './Categories.tsx';
 import { JSX } from 'react';
@@ -37,7 +39,7 @@ createRoot(root!).render(
             <Navbar />
             <App />
           </>
-          </ProtectedRoute>
+        </ProtectedRoute>
       } />
 
       {/* Public route: login page */}
@@ -65,6 +67,14 @@ createRoot(root!).render(
           <>
             <Navbar />
             <UserAccount />
+          </>
+        </ProtectedRoute>
+      } />
+      <Route path="/reviewuser" element={
+        <ProtectedRoute>
+          <>
+            <Navbar />
+            <ReviewUser />
           </>
         </ProtectedRoute>
       } />
