@@ -32,8 +32,6 @@ VITE_SUPABASE_KEY=<supabase-key>
 -Install Supabase: `npm install @supabase/supabase-js`
 -to run code: `npm run dev` in one terminal and `node supabase.js` to run the server
 
-LAST RESORT: 
-Merges poconnor into your current branch (sgzhang).
-If any files conflict, Git will automatically resolve the conflict by keeping poconnor's version (-X theirs).
-`git checkout sgzhang`
-`git merge -s recursive -X theirs origin/poconnor`
+# Admin account info:
+admin account: admin/Bacon85!
+testing account: test_1/test_1, test_2/test_2, test_3/test_3
