@@ -8,12 +8,14 @@ import axios from "axios";
 function App() {
     const [services, setServices] = useState<Service[]>([]);
 
+    const userId = localStorage.getItem('userId') || "defaultUserId";
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
     useEffect(() => {
         const fetch_services = async () => {
             try {
                 const response = await axios.get("http://localhost:3000/posts");
                 // Map response data to match the Service type
-                console.log(`${response.data}`)
+                // console.log(`${response.data}`)
                 const cleanedData = response.data.map((post: any) => ({
                     id: post.postid,
                     ServiceType: post.servicetype,
@@ -46,7 +48,7 @@ function App() {
             <h1>WELCOME TO MINUTEMATCH</h1>
             {services.length > 0 ? (
                 services.reverse().map((service) => (
-                    <ServiceCard key={service.id} service={service} />
+                    <ServiceCard key={service.id} service={service} userId={userId} isAdmin={isAdmin}/>
                 ))
             ) : (
                 <p>Loading services...</p>

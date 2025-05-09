@@ -3,7 +3,6 @@ import cors from 'cors';
 import multer from 'multer';  // for the file uploads
 
 
-
 import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = 'https://swzbqpnkyetlzdovujon.supabase.co'
 const supabaseKey = process.env.SUPABASE_KEY
@@ -396,6 +395,37 @@ app.post("/flag", async (req, res) => {
     res.status(200).json(data);
 
 })
+
+app.post("/unflag", async (req, res) => {
+    const { postId, userId } = req.body; //postId is correct now, userId is still incorrect
+
+    console.log("Received postId:", postId, "and userId:", userId); // Debug
+
+    // Check if user is admin
+    const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("isAdmin")
+        .eq("userid", userId)
+        .single();
+
+    console.log("User Data:", user, "Error:", userError); // Debug
+
+    if (userError || !user?.isAdmin) {
+        return res.status(403).json({ error: 'Unauthorized user' });
+    }
+
+    const { data: result, error } = await supabase
+        .from("posts")
+        .update({ flagged: false })
+        .eq("postid", postId)
+        .select();
+
+    if (error) {
+        return res.status(500).json({ error: 'Failed to unflag post' });
+    }
+
+    res.status(200).json(result);
+});
 
 
 const PORT = process.env.PORT || 3000;

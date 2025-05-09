@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL!;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY!;
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function Login() {
   const navigate = useNavigate();
@@ -85,7 +91,7 @@ export default function Login() {
 
       const res = await fetch(`${API_URL}/user?username=${encodeURIComponent(username)}`);
       const user = await res.json();
-      console.log(user);
+      // console.log(user);
   
       if (!user || !user.password) {
         setError('User not found');
@@ -96,10 +102,22 @@ export default function Login() {
         setError('Incorrect password');
         return;
       }
+
+      const { data, error } = await supabase
+            .from('users')
+            .select('*') // Select all columns from the users table
+            .eq('userid', user.userid) // Match the userid from the login response
+            .single(); // Assuming userid is unique
+
   
       // If all checks pass
       localStorage.setItem('authenticated', 'true');
       localStorage.setItem('username', username); // optionally store user info
+      localStorage.setItem('userId', data.userid);
+      localStorage.setItem('isAdmin', data.isAdmin)
+      localStorage.setItem('data', data)
+      // console.log(user);
+      // console.log(data)
       navigate('/'); // redirect to homepage or dashboard
     } catch (err) {
       console.error(err);
