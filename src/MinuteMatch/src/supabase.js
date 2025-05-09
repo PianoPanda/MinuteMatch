@@ -340,19 +340,33 @@ app.get("/all_users", async (req,res)=>{
 app.post('/user', async (req, res) => {
     const {
         //todo these values need to double check the implementation of the code for this instance
-      UserID,
-      Username,
-      Email,
-      Password,
-      Ranking = 0,
-      Verified = false,
-      Groups = [],
-      Last_active = new Date().toISOString(),
-      Flagged = false,
-      Reviews = []
+      // UserID,
+      // Username,
+      // Email,
+      // Password,
+      // Ranking = 0,
+      // Verified = false,
+      // Groups = [],
+      // Last_active = new Date().toISOString(),
+      // Flagged = false,
+      // Reviews = [],
+      // IsAdmin = false
+      username,
+      password,
+      email,          // add real email if you collect it
+      ranking,         // defaults that match your /user route
+      verified,
+      groups,
+      reviews,
+      last_active,
+      flagged,
+      isAdmin
     } = req.body;
-  
-    if (!UserID || !Username || !Password) {
+    console.log(username)
+    console.log(password)
+    console.log(req.body)
+
+    if (!username || !password) {
       return res.status(400).json({ error: "Missing required fields (UserID, Username, Password)" });
     }
   
@@ -360,18 +374,18 @@ app.post('/user', async (req, res) => {
       .from('user')
       .insert([
         {
-          userID,
-          username,
-          email,
-          password,
-          ranking,
-          verified,
-          groups,
-          last_active,
-          flagged,
-          reviews
+          username: username,
+          email: email,
+          password: password,
+          ranking: ranking,
+          verified: verified,
+          groups: groups,
+          last_active: last_active,
+          flagged: flagged,
+          reviews: reviews,
+          isAdmin: isAdmin
         }
-      ]);
+      ]);      
   
     if (error) {
       console.error("Error adding user:", error);
