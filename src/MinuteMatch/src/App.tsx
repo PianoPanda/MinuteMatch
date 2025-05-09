@@ -8,6 +8,8 @@ import axios from "axios";
 
 function App() {
   const [services, setServices] = useState<Service[]>([]);
+  const userId = localStorage.getItem('userId') || "defaultUserId";
+  const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
   useEffect(() => {
    const fetch_services = async () => {
@@ -48,7 +50,7 @@ function App() {
       <h1>WELCOME TO MINUTEMATCH</h1>
       {services.length > 0 ? (
         services.map((service) => (
-          <ServiceCard key={service.id} service={service} />
+          <ServiceCard key={service.id} service={service} userId={userId} isAdmin={isAdmin}/>
         ))
       ) : (
         <p>Loading services...</p>
