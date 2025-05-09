@@ -11,27 +11,17 @@ body {
     margin: 2rem auto;
     max-width: 1600px;
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Force two equal-width columns */
+    grid-template-columns: 1fr 1fr; 
     gap: 2rem;
   }
   
-  /* Collapse to one column only on small screens */
+  
   @media (max-width: 900px) {
     .user-account-container {
       grid-template-columns: 1fr;
     }
   }
   
-  /* .rate-user-panel,
-  .section {
-    background: #1e1e1e;
-    padding: 2rem;
-    border: 2px solid #800000;
-    border-radius: 12px;
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.1);
-    height: fit-content;
-    width: 100%;
-  } */
 
   .rate-user-panel,
 .section {

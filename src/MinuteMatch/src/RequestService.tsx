@@ -1,12 +1,8 @@
 import React from "react";
-import "./PostRequestService.css"; // Ensure CSS file name is correct
+import "./PostRequestService.css"; 
 
 const RequestService: React.FC = () => {
     // Implementation of the express code to connect to the postgreSQL database
-    
-
-
-
     return (
         <div className="form-container">
             <h1 className="form-title">Request a Service</h1>

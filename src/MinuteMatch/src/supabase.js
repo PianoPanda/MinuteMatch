@@ -45,75 +45,6 @@ app.get('/group', async (req, res) => {
     res.json(group);
 });
 
-// app.post('/group', async (req, res) => {
-// //name members categories
-//     console.log(req.body);
-
-//     //check duplicates
-//     let {data:dupes,error3} = await supabase
-//         .from("group")
-//         .select('*')
-//         .eq("groupname",req.body.groupname);
-//     if (error3){
-//         console.error('Error fetching group:', error);
-//         res.status(500).json({ message: 'Error finding dupes' });
-//     }
-//     if(dupes.length > 0){
-//         res.status(500).json({message: "DUPLICATE GROUPNAME"})
-//     }
-//     //-------
-
-//     let {data:memberIDs,error1} = await supabase
-//         .from("users")
-//         .select('userid')
-//         .likeAnyOf("username",req.body.members)
-//     if(error1){
-//         res.status(500).json(error)
-//         return;
-//     }
-//     console.log(memberIDs)
-//     memberIDs = memberIDs.map(i=>i.userid)
-//     let {data:catIDs,error2} = await supabase
-//         .from("categories")
-//         .select('id')
-//         .likeAnyOf("name",req.body.categories);
-//     if (error2){res.status(500).json(error)
-//     return;}
-//     catIDs=catIDs.map((i)=>i.id)
-
-//     let { data: group, error } = await supabase
-//         .from('group')
-//         .insert({groupname:req.body.name})
-//         .select()
-//         .single();//list of objects with groupname attr
-//     if (error){
-//         console.error('Error adding group:', error);
-//         res.status(500).json({ message: 'Error adding group' });
-//         return;
-//     }
-
-//     await memberIDs.forEach(async (id)=>{
-//         console.log(group)
-//         let {error} = await supabase
-//             .from("group_members")
-//             .insert({group_id:group.groupid,member_id:id})
-//         if(error){
-//             console.error('Error adding group:', error);
-//         }
-//     });
-
-//     await catIDs.forEach(async (id)=>{
-//         console.log(id)
-//         let {error} = await supabase
-//             .from("group_categories")
-//             .insert({group_id:group.groupid,category_id:id})
-//         if(error){
-//             console.error('Error adding group:', error);
-//         }
-//     });
-
-//     res.json(group);
-// });
 
 app.post('/group', async (req, res) => {
     console.log(req.body);
@@ -255,19 +186,6 @@ app.get('/api/posts', async (req, res) => {
         }));
         res.json(posts);
 
-    //     client = await pool.connect();
-    //     const checkDuplicates = await client.query('SELECT * FROM "group" WHERE groupname = $1', [groupName]);
-    //     if (checkDuplicates.rows.length > 0) {
-    //         return res.status(400).json({ message: `Group ${groupName} already exists` });
-    //     }
-
-    //     await client.query('INSERT INTO "group" (groupname) VALUES ($1)', [groupName]);
-    //     res.status(201).json({ message: `Group ${groupName} added successfully` });
-    // } catch (err) {
-    //     console.error('Error adding group:', err);
-    //     res.status(500).json({ message: 'Error adding group' });
-    // } finally {
-    //     if (client) client.release();
     });
 
 
@@ -316,10 +234,7 @@ app.get('/user', async (req, res) => {
         return res.status(500).json({error: "Failed to fetch users"});
     }
     data = {...data,Reviews: Array.isArray(data.Reviews)?data.Reviews:[]}
-    /*const users = data.map(user => ({
-        ...user, //get all of the users from our data base
-        Reviews: Array.isArray(user.Reviews) ? user.Reviews : []
-      }));*/
+  
     
       res.status(200).json(data);
 });
@@ -340,17 +255,7 @@ app.get("/all_users", async (req,res)=>{
 app.post('/user', async (req, res) => {
     const {
         //todo these values need to double check the implementation of the code for this instance
-      // UserID,
-      // Username,
-      // Email,
-      // Password,
-      // Ranking = 0,
-      // Verified = false,
-      // Groups = [],
-      // Last_active = new Date().toISOString(),
-      // Flagged = false,
-      // Reviews = [],
-      // IsAdmin = false
+ 
       username,
       password,
       email,          // add real email if you collect it
@@ -397,56 +302,6 @@ app.post('/user', async (req, res) => {
 
 
 // **Add a Post**
-// app.post('/posts', upload.single('picture'), async (req, res) => {
-//         const { service, category, description, group} = req.body;
-//         const picture = req.file ? req.file.buffer.toString("base64") : null; // <-- This is the fix: use the buffer instead of path
-//         if (!service) {
-//             return res.status(400).json({ error: 'Service type is required' });
-//         }
-//         if (!category) {
-//             return res.status(400).json({ error: 'Category is required' });
-//         }
-//         if (!description || description.trim().length < 2) {
-//             return res.status(400).json({ error: 'Description must be at least 10 characters long' });
-//         }
-
-//         const categoryArray = Array.isArray(category) ? category : [category];
-//         const groupID = group?await supabase
-//             .from("group")
-//             .select("groupid")
-//             .eq("groupname",group).limit(1).single():null;
-//         let {data:result,error} = await supabase
-//         .from('posts')
-//         .insert({servicetype:service,text:description,picture:picture,groupid:groupID?groupID.data.groupid:null})
-//         .select();
-//         if (error){
-//             console.error('Error inserting post:', error);
-
-//             if (error instanceof multer.MulterError) {
-//                 return res.status(400).json({ error: error.message });
-//             }
-
-//             res.status(500).json({ error: 'Failed to add post' });
-//         }
-//     let {data: catIDArr,error3} = await supabase
-//         .from('categories')
-//         .select("id")
-//         .eq("name",category.slice(1,-1))
-//         .limit(1);
-//     if(error3){
-//         console.error('Error finding post category:', error);
-//     }
-//     let catID=catIDArr[0].id;
-
-//     let {error2} = await supabase.from("post_categories")
-//         .insert({post_id:result[0].postid,category_id:catID})
-//     if(error2){console.error("Error submitting post category:", error);}
-
-
-//     res.status(201).json(result[0]);
-// });
-
-
 /*Posts are actually what we want to submit with the user id*/
 
 /* We will also need to come back to this and implement the comment storage into the posts data as well for this implementation*/
@@ -520,56 +375,6 @@ app.post('/posts', upload.single('picture'), async (req, res) => {
   });
   
 
-
-/*New app of the posts feature we will need to add the comments set up for the get and the post with the user name*/
-// app.get('/posts', async (req, res) => {
-//     const { data: result, error } = await supabase
-//       .from('posts')
-//       .select(`
-//         *,
-//         user:users!userid (username),
-//         post_categories (
-//           category_id:categories (*)
-//         ),
-//         groupid:group (
-//           groupname
-//         )
-//       `);
-  
-//     if (error) {
-//       console.error('Error retrieving posts:', error);
-//       return res.status(500).json({ error: 'Failed to fetch posts' });
-//     }
-  
-//     const posts = result.map(post => {
-//       const base64 = post.picture
-//         ? Buffer.from(post.picture, "base64").toString("base64")
-//         : null;
-  
-//       const catArr = post.post_categories.map(postcat => postcat.category_id.name);
-  
-//       const resolvedUsername = post.user?.username ?? "Unknown"; // ✅ Ensures fallback if username missing
-  
-//       return {
-//         id: post.postid,
-//         ServiceType: post.servicetype,
-//         picture: base64
-//           ? `data:application/octet-stream;base64,${base64}`
-//           : null,
-//         groupId: post.groupid?.groupname ?? null,
-//         category: catArr,
-//         description: post.text,
-//         postComments: post.postcomments ?? [],
-//         timestamp: post.timestamp,
-//         flagged: post.flagged,
-//         username: resolvedUsername
-//       };
-//     });
-  
-//     res.status(200).json(posts);
-//     console.log("Final posts sent to the frontend:", posts);
-//   });
-
 app.get('/posts', async (req, res) => {
     const { data: result, error } = await supabase
       .from('posts')
@@ -641,7 +446,7 @@ app.post("/flag", async (req, res) => {
 
 })
 
-/*PRESTON's FUNCTIONS DO NOT TOUCH LEAVE FOR TESTING PURPOSES*/
+/*P FUNCTIONS DO NOT TOUCH LEAVE FOR TESTING PURPOSES*/
 
 app.post('/comment', async (req, res) => {
     const { postId, username, text } = req.body;
