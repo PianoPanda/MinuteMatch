@@ -255,7 +255,6 @@ app.get("/all_users", async (req,res)=>{
 app.post('/user', async (req, res) => {
     const {
         //todo these values need to double check the implementation of the code for this instance
- 
       username,
       password,
       email,          // add real email if you collect it
