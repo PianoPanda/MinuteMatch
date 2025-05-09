@@ -725,6 +725,42 @@ app.get("/userreview", async (req, res) => {
     res.status(200).json(reviews);
   });
 
+app.get("/usergroups", async (req, res) => {
+    const { data, error } = await supabase
+        .from('users')
+        .select(`
+    userid,
+    username,
+    group_members (
+      group_id,
+      group (
+        groupid,
+        groupname
+      )
+      )
+    )
+  `);
+    if (error) {
+        console.error('Error fetching data:', error);
+        res.status(500).json({ error: "Failed to fetch user groups" });
+    }
+    console.log(data)
+    res.json(data);
+
+})
+
+app.post("/usergroups", async (req, res) => {
+    console.log("USER GROUPS")
+    const {userid,groupid} = req.body;
+    let {error}=await supabase.from("group_members")
+        .insert({group_id:groupid,member_id:userid});
+    if(error){
+        console.error("TRYING TO ADD MEMBERSHIP",error)
+        res.status(500).json({ error: "Failed to add membership" });
+    }
+    res.status(200).json(userid);
+})
+
   app.post("/reviews", async (req, res) => {
     const {
       reviewer,

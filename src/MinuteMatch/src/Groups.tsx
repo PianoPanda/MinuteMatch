@@ -23,6 +23,8 @@ const Groups: React.FC = () => {
   const [newGroupCategories, setNewGroupCategories] = useState([]);
   const [newGroupUsers, setNewGroupUsers] = useState([]);
 
+  const [userGroups, setUserGroups] = useState<any[]>([]);
+  const [selectedUser,setSelectedUser] = useState<string>('');
   useEffect(() => {
     const debugFetchGroupTable = async () => {
       try {
@@ -110,12 +112,26 @@ const Groups: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const hi = async ()=>{
+      const {data:usergroups} = await axios.get("http://localhost:3000/usergroups");
+      setUserGroups(usergroups);
+      console.log(userGroups)
+    }
+    hi();
+  }, []);
+
   function selectUser(user) {
     setNewGroupUsers([...newGroupUsers, user]);
   }
 
   function selectCategory(cat) {
     setNewGroupCategories([...newGroupCategories, cat]);
+  }
+
+  async function handle_add_user(userid,groupid) {
+    console.log(userid,groupid);
+    await axios.post("http://localhost:3000/usergroups", {userid:userid,groupid:groupid});
   }
 
   return (
@@ -189,6 +205,17 @@ const Groups: React.FC = () => {
             <strong>{groupMap.find((g) => g.id === selectedGroup)?.name || 'Unknown Group'}</strong>
           </p>
         )}
+
+        <h2>Add User To Group:</h2>
+
+          <select onChange={(e) => setSelectedUser(e.target.value)}>
+            {console.log(userGroups.map((group)=>group.group_members))}
+            <option value="">
+              Select a user
+            </option>
+            {userGroups.filter((g)=>!g.group_members.some((gm)=>gm.group.groupid == selectedGroup)).map((group, idx) => (<option key={idx} value={group.userid}>{group.username}</option>))}
+          </select>
+          <button onClick={()=>handle_add_user(selectedUser,selectedGroup)} disabled={selectedUser==""}>Add</button>
 
         <h2 style={{ marginTop: '2rem' }}>Posts in this group</h2>
 
