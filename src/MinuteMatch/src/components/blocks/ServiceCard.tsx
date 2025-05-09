@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Service } from "../../types"; // adjust the path as needed
+import { Service } from "../../types";
 import "./ServiceCard.css";
 import { JSX } from "react/jsx-runtime";
 import axios from "axios";
@@ -11,7 +11,7 @@ interface Comment {
   timestamp: string;
 }
 
-function ServiceCard({ service, userId, isAdmin }: { service: Service, userId: string, isAdmin: boolean }): JSX.Element {
+function ServiceCard({ service }: { service: Service }): JSX.Element {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
   const [isFlagged, setIsFlagged] = useState<boolean>(service.flagged || false);
@@ -45,25 +45,15 @@ function ServiceCard({ service, userId, isAdmin }: { service: Service, userId: s
     }
   };
 
-  const flagService = async (s: Service) => {
+  async function flagService(s: Service) {
+    try {
       await axios.post("http://localhost:3000/flag", { id: s.id });
-  };
-
-  const unflagService = async (s: Service) => {
-      try {
-          console.log(s) //this is correct
-          console.log(s.id)
-          console.log(userId)
-          // console.log("ServiceCard 38:", isAdmin)
-          if (isAdmin) {
-            await axios.post("http://localhost:3000/unflag", { postId: s.id, userId });
-          }
-          // Optionally refresh or adjust the state here to reflect the change.
-      } catch (error) {
-          console.error("Error unflagging service:", error);
-      }
+      setIsFlagged(true);
+    } catch (err) {
+      console.error("Failed to flag service:", err);
+    }
   }
-  
+
   const handleUsernameClick = (clickedUsername: string) => {
     navigate("/reviewuser", {
       state: {
@@ -72,127 +62,72 @@ function ServiceCard({ service, userId, isAdmin }: { service: Service, userId: s
       },
     });
   };
-  
+
   return (
-      <div className="service-card">
-          <div style={{ position: "relative", textAlign: "center", marginBottom: "1rem" }}>
-              <h3 style={{ margin: 0, color:service.ServiceType ? "#9A3131":"white"}}>
-                  {service.ServiceType ? 'Service Post' : 'General Post'}
-              </h3>
-              <button
-                  onClick={() => navigator.clipboard.writeText(String(service.id))}
-                  title="Copy Post ID"
-                  style={{
-                      position: "absolute",
-                      right: 0,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      width: "24px",
-                      height: "24px",
-                      background: "none",
-                      border: "1px solid #aaa",
-                      borderRadius: "4px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
-                      padding: 0,
-                      fontSize: "14px",
-                  }}
-              >
-                  📋
-              </button>
-
-              {service.flagged ? (
-                  isAdmin && (
-                      <button
-                          onClick={() => unflagService(service)}
-                          title="Unflag Post"
-                          style={{
-                              position: "absolute",
-                              right: 0,
-                              top: "50%",
-                              transform: "translateY(-50%) translateX(-100%)",
-                              width: "24px",
-                              height: "24px",
-                              background: "none",
-                              border: "1px solid red",
-                              borderRadius: "4px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              cursor: "pointer",
-                              padding: 0,
-                              fontSize: "14px",
-                          }}
-                      >
-                          ❌
-                      </button>
-                  )
-              ) : (
-                  <button
-                      onClick={() => flagService(service)}
-                      title="Flag Post"
-                      style={{
-                          position: "absolute",
-                          right: 0,
-                          top: "50%",
-                          transform: "translateY(-50%) translateX(-100%)",
-                          width: "24px",
-                          height: "24px",
-                          background: "none",
-                          border: "1px solid #aaa",
-                          borderRadius: "4px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          cursor: "pointer",
-                          padding: 0,
-                          fontSize: "14px",
-                      }}
-                  >
-                      🚩
-                  </button>
-              )}
-          </div>
-
-          {/* Display the picture if it exists */}
-          {service.picture ? (
-              service.picture.startsWith("data:application") ? (
-                  <img src={service.picture} alt="service" style={{ width: "600px" }} />
-              ) : (
-                  <>
-                      <iframe src={service.picture} width="400" height="500" title="file-view" />
-                      {console.log('\n')}
-                  </>
-              )
-          ) : (
-              <p>No picture available</p>
-          )}
-
-          {service.groupId && <p><i>Group: {service.groupId}</i></p>}
-          {service.category && service.category.length > 0 && (
-              <p><i>Categories: {service.category.join(', ')}</i></p>
-          )}
-          <p>{service.description}</p>
-          <p><i>Posted on: {new Date(service.timestamp).toLocaleString()}</i></p> {/* 'Posted on' label */}
-
-          {/* Display the comments that have been posted to a post */}
-          {comments.map((c, index) => (
-              <div key={index} className="comment">
-                  <p>{c.text}</p>
-                  <p>{c.timestamp}</p>
-              </div>
-          ))}
-
-          {/* 'Add comment' button triggers the setComment function call */}
-          <textarea
-              placeholder="Add a comment..."
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-          />
-          <button onClick={handleAddComment}>Add Comment</button>
+    <div className="service-card">
+      <div className="card-header">
+        <h3 style={{ color: service.ServiceType ? "green" : "red" }}>
+          {service.ServiceType ? "Service Post" : "Request Post"}
+        </h3>
+        <i className="username-label">
+          Posted by: <b onClick={() => handleUsernameClick(service.username)} className="clickable">{service.username}</b>
+        </i>
+        <button
+          onClick={() => navigator.clipboard.writeText(String(service.id))}
+          title="Copy Post ID"
+          className="icon-button copy"
+        >📋</button>
+        <button
+          onClick={() => !isFlagged && flagService(service)}
+          title={isFlagged ? "Already flagged" : "Flag Post"}
+          className="icon-button flag"
+          disabled={isFlagged}
+        >🚩</button>
       </div>
+
+      {service.picture ? (
+        service.picture.startsWith("data:application") ? (
+          <img src={service.picture} alt="service" />
+        ) : (
+          <iframe
+            src={service.picture}
+            width="400"
+            height="500"
+            title="file-view"
+          />
+        )
+      ) : <p>No picture available</p>}
+
+      {service.groupId && <p><i>Group: {service.groupId}</i></p>}
+
+      {service.category?.length > 0 && (
+        <p><i>Categories: {service.category.join(", ")}</i></p>
+      )}
+
+      <p>{service.description}</p>
+      <p><i>Posted on: {new Date(service.timestamp).toLocaleString()}</i></p>
+
+      <div className="comments-section">
+        <h4>Comments</h4>
+        {comments.length > 0 ? (
+          comments.map((c, index) => (
+            <div key={index} className="comment">
+              <p><strong onClick={() => handleUsernameClick(c.username)} className="clickable">{c.username}</strong>: {c.text}</p>
+              <p className="timestamp">{new Date(c.timestamp).toLocaleString()}</p>
+            </div>
+          ))
+        ) : (
+          <p>No comments yet.</p>
+        )}
+      </div>
+
+      <textarea
+        placeholder="Add a comment..."
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+      />
+      <button onClick={handleAddComment}>Add Comment</button>
+    </div>
   );
 }
 

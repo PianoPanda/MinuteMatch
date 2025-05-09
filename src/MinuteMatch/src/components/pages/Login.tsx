@@ -40,8 +40,10 @@ export default function Login() {
         reviews: [],
         last_active: new Date().toISOString(),
         flagged: false,
+        isAdmin: false
       };
       console.log(payload)
+      console.log(API_URL)
       const res = await fetch(`${API_URL}/user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
