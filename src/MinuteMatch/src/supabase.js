@@ -306,7 +306,7 @@ app.get('/user', async (req, res) => {
     let {data, error} = await supabase
     .from('users')
     .select (
-        "userid,username,email,ranking,verified,groups,last_active,flagged,reviews,password"
+        "userid,username,email,ranking,verified,groups,last_active,flagged,reviews,password,group_members(group_id,group(groupid,groupname))"
     )
         .eq("username",req.query.username)
         .single();

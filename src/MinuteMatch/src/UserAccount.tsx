@@ -41,7 +41,7 @@ const UserAccount: React.FC = () => {
         setUsername(user.username || "Unknown");
         setRank(user.ranking ?? null);
         setReviews(calculateCategoryAverages(user.reviews || []));
-        setGroups(user.groups || []);
+        setGroups(user.group_members.map((m)=>m.group.groupname) || []);
         setLastActive(user.last_active || new Date().toISOString());
         setFlagged(user.flagged ?? false);
       } catch (err) {
