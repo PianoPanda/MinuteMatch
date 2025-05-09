@@ -75,21 +75,7 @@ export default function Login() {
   
       // Hash the combination of username + password
       const hash = await sha256Hash(username + password);
-  
-      // Query Supabase for the user with the matching username
-      // const res = await fetch(`${API_URL}/user?username=${encodeURIComponent(username)}`);
-      // const users = await res.json();
-  
-      // if (!Array.isArray(users) || users.length === 0) {
-      //   setError('User not found');
-      //   return;
-      // }
 
-      // const user = users.find(user => user.username === username) // find corresponding user
-      // if (user.password !== hash) {
-      //   setError('Incorrect password');
-      //   return;
-      // }
 
       const res = await fetch(`${API_URL}/user?username=${encodeURIComponent(username)}`);
       const user = await res.json();
@@ -118,8 +104,7 @@ export default function Login() {
       localStorage.setItem('userId', data.userid); // added to see the issue of getting the id on a post
       localStorage.setItem('isAdmin', data.isAdmin)
       localStorage.setItem('data', data)
-      // console.log(user);
-      // console.log(data)
+   
       navigate('/'); // redirect to homepage or dashboard
     } catch (err) {
       console.error(err);
