@@ -1,4 +1,5 @@
-// App.tsx
+//PLEASE PLEASE PLEASE
+
 import { useEffect, useState } from "react";
 import "./App.css";
 import { Service } from "./types";
@@ -6,55 +7,56 @@ import ServiceCard from "./components/blocks/ServiceCard";
 import axios from "axios";
 
 function App() {
-    const [services, setServices] = useState<Service[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const userId = localStorage.getItem('userId') || "defaultUserId";
+  const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
-    const userId = localStorage.getItem('userId') || "defaultUserId";
-    const isAdmin = localStorage.getItem('isAdmin') === 'true';
-    useEffect(() => {
-        const fetch_services = async () => {
-            try {
-                const response = await axios.get("http://localhost:3000/posts");
-                // Map response data to match the Service type
-                // console.log(`${response.data}`)
-                const cleanedData = response.data.map((post: any) => ({
-                    id: post.postid,
-                    ServiceType: post.servicetype,
-                    picture: post.picture, // already a Base64 string if present
-                    user: {
-                        id: post.userid || 'N/A', //todo User id has not been made yet so defualt null
-                        //name: post.user?.name || "Unknown User",
-                    },
-                    group: post.groupid || null, //todo: this is not going to be a null
-                    groupId:post.groupId || null,
-                    category: post.category || [],
-                    description: post.text || "No description available",
-                    postComments: post.postcomments || [], //todo; may not need the empty array for the implementation of the service card, can be removed if not needed
-                    timestamp: post.timestamp,
-                    flagged: post.flagged || false,
-                }));
-                console.log(`${cleanedData.length} services fetched from the API`);
-                console.log(`${cleanedData.description} what is the data being inputed `)
-                setServices(cleanedData);
-            } catch (error) {
-                console.error("Error fetching services:", error);
-            }
-        };
+  useEffect(() => {
+   const fetch_services = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/posts");
 
-        fetch_services();
-    }, []);
+        const cleanedData = response.data
+          .sort(
+            (a: any, b: any) =>
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          )
+          .map((post: any) => ({
+            id: post.id || post.postid,
+            ServiceType: post.ServiceType ?? post.servicetype,
+            picture: post.picture ?? null,
+            group: post.groupId || null,
+            groupId: post.groupId || null,
+            category: post.category,
+            description: post.description || post.text,
+            comments: post.comments || [], 
+            timestamp: post.timestamp,
+            flagged: post.flagged || false,
+            username: post.username,
+          }));
 
-    return (
-        <div className="App">
-            <h1>WELCOME TO MINUTEMATCH</h1>
-            {services.length > 0 ? (
-                services.reverse().map((service) => (
-                    <ServiceCard key={service.id} service={service} userId={userId} isAdmin={isAdmin}/>
-                ))
-            ) : (
-                <p>Loading services...</p>
-            )}
-        </div>
-    );
+        console.log(`${cleanedData.length} services fetched from the API`);
+        setServices(cleanedData);
+      } catch (error) {
+        console.error("Error fetching services:", error);
+      }
+    };
+
+    fetch_services();
+  }, []);
+
+  return (
+    <div className="App">
+      <h1>WELCOME TO MINUTEMATCH</h1>
+      {services.length > 0 ? (
+        services.map((service) => (
+          <ServiceCard key={service.id} service={service} userId={userId} isAdmin={isAdmin}/>
+        ))
+      ) : (
+        <p>Loading services...</p>
+      )}
+    </div>
+  );
 }
 
 export default App;

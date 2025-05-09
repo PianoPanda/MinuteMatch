@@ -113,7 +113,7 @@ export default function Login() {
       // If all checks pass
       localStorage.setItem('authenticated', 'true');
       localStorage.setItem('username', username); // optionally store user info
-      localStorage.setItem('userId', data.userid);
+      localStorage.setItem('userId', data.userid); // added to see the issue of getting the id on a post
       localStorage.setItem('isAdmin', data.isAdmin)
       localStorage.setItem('data', data)
       // console.log(user);
