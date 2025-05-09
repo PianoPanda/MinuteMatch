@@ -99,7 +99,8 @@ export default function Login() {
   
       // If all checks pass
       localStorage.setItem('authenticated', 'true');
-      localStorage.setItem('username', username); // optionally store user info
+      localStorage.setItem('username', username);
+      localStorage.setItem('userid', user.userid); // added to see the issue of getting the id on a post
       navigate('/'); // redirect to homepage or dashboard
     } catch (err) {
       console.error(err);

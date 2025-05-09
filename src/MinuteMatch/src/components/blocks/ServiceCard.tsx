@@ -1,135 +1,284 @@
-import { useState } from "react";
 
-import { Service } from "../../types"; // adjust the path as needed
+
+// import { useEffect, useState } from "react";
+// import { Service } from "../../types"; // Adjust the path if needed
+// import "./ServiceCard.css";
+// import { JSX } from "react/jsx-runtime";
+// import axios from "axios";
+
+// interface Comment {
+//   username: string;
+//   text: string;
+//   timestamp: string;
+// }
+
+// function ServiceCard({ service }: { service: Service }): JSX.Element {
+//   const [comment, setComment] = useState("");
+//   const [comments, setComments] = useState<Comment[]>([]);
+//   const [isFlagged, setIsFlagged] = useState<boolean>(service.flagged || false);
+
+//   // Load existing comments from post data
+//   useEffect(() => {
+//     if (service.comments && Array.isArray(service.comments)) {
+//       setComments(service.comments);
+//     }
+//   }, [service.comments]);
+
+//   // Submit a new comment
+//   const handleAddComment = async () => {
+//     if (comment.trim() === "") return;
+
+//     const username = localStorage.getItem("username");
+//     if (!username) {
+//       alert("You must be logged in to comment.");
+//       return;
+//     }
+
+//     try {
+//       const response = await axios.post("http://localhost:3000/comment", {
+//         postId: service.id,
+//         username,
+//         text: comment
+//       });
+
+//       const newComment = response.data.comment;
+//       setComments([...comments, newComment]);
+//       setComment("");
+//     } catch (err) {
+//       console.error("Failed to submit comment:", err);
+//       alert("Failed to add comment.");
+//     }
+//   };
+
+//   async function flagService(s: Service) {
+//     try {
+//       await axios.post("http://localhost:3000/flag", { id: s.id });
+//       setIsFlagged(true); // update local state so button disables
+//     } catch (err) {
+//       console.error("Failed to flag service:", err);
+//     }
+//   }
+
+//   return (
+//     <div className="service-card">
+//       <div className="card-header">
+//         <h3 style={{ color: service.ServiceType ? "green" : "red" }}>
+//           {service.ServiceType ? "Service Post" : "Request Post"}
+//         </h3>
+//         <i className="username-label">
+//           Posted by: <b>{service.username}</b>
+//         </i>
+//         <button
+//           onClick={() => navigator.clipboard.writeText(String(service.id))}
+//           title="Copy Post ID"
+//           className="icon-button copy"
+//         >
+//           📋
+//         </button>
+
+//         <button
+//           onClick={() => {
+//             if (!isFlagged) flagService(service);
+//           }}
+//           title={isFlagged ? "Already flagged" : "Flag Post"}
+//           className="icon-button flag"
+//           disabled={isFlagged}
+//         >
+//           🚩
+//         </button>
+//       </div>
+
+//       {service.picture ? (
+//         service.picture.startsWith("data:application") ? (
+//           <img src={service.picture} alt="service" />
+//         ) : (
+//           <iframe
+//             src={service.picture}
+//             width="400"
+//             height="500"
+//             title="file-view"
+//           />
+//         )
+//       ) : (
+//         <p>No picture available</p>
+//       )}
+
+//       {service.groupId && (
+//         <p>
+//           <i>Group: {service.groupId}</i>
+//         </p>
+//       )}
+
+//       {service.category && service.category.length > 0 && (
+//         <p>
+//           <i>Categories: {service.category.join(", ")}</i>
+//         </p>
+//       )}
+
+//       <p>{service.description}</p>
+//       <p>
+//         <i>Posted on: {new Date(service.timestamp).toLocaleString()}</i>
+//       </p>
+
+//       {/* Render comments */}
+//       <div className="comments-section">
+//         <h4>Comments</h4>
+//         {comments.length > 0 ? (
+//           comments.map((c, index) => (
+//             <div key={index} className="comment">
+//               <p><strong>{c.username}</strong>: {c.text}</p>
+//               <p className="timestamp">{new Date(c.timestamp).toLocaleString()}</p>
+//             </div>
+//           ))
+//         ) : (
+//           <p>No comments yet.</p>
+//         )}
+//       </div>
+
+//       {/* Add comment input */}
+//       <textarea
+//         placeholder="Add a comment..."
+//         value={comment}
+//         onChange={(e) => setComment(e.target.value)}
+//       />
+//       <button onClick={handleAddComment}>Add Comment</button>
+//     </div>
+//   );
+// }
+
+// export default ServiceCard;
+
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Service } from "../../types";
 import "./ServiceCard.css";
 import { JSX } from "react/jsx-runtime";
 import axios from "axios";
 
 interface Comment {
-    text: string;
-    timestamp: string;
+  username: string;
+  text: string;
+  timestamp: string;
 }
 
 function ServiceCard({ service }: { service: Service }): JSX.Element {
-    const [comment, setComment] = useState("");
-    const [comments, setComments] = useState<Comment[]>([]);
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [isFlagged, setIsFlagged] = useState<boolean>(service.flagged || false);
+  const navigate = useNavigate();
 
-    const handleAddComment = () => {
-        if (comment.trim() === "") return; // skip empty comments
-
-        console.log("New comment:", comment);
-        const timestamp = new Date().toLocaleString();
-        const comment_yay: Comment = {
-            text: comment,
-            timestamp: timestamp,
-          };
-        const newComment: Comment = comment_yay;
-
-        setComments([...comments, newComment]); // add new comment to list
-        //TODO: Comments don't update database
-        setComment(""); // reset textarea
-    };
-    console.log("groupid",service.groupId);
-    async function flagService(s:Service){
-        await axios.post("http://localhost:3000/flag",{id:s.id})
+  useEffect(() => {
+    if (service.comments && Array.isArray(service.comments)) {
+      setComments(service.comments);
     }
-    return (
-        <div className="service-card">
-            <div style={{ position: "relative", textAlign: "center", marginBottom: "1rem" }}>
-            <h3 style={{ margin: 0, color:service.ServiceType ? "#9A3131":"white"}}>
-                {service.ServiceType ? 'Service Post' : 'General Post'}
-            </h3>
-            <button
-                onClick={() => navigator.clipboard.writeText(String(service.id))}
-                title="Copy Post ID"
-                style={{
-                position: "absolute",
-                right: 0,
-                top: "50%",
-                transform: "translateY(-50%)",
-                width: "24px",
-                height: "24px",
-                background: "none",
-                border: "1px solid #aaa",
-                borderRadius: "4px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                padding: 0,
-                fontSize: "14px",
-                }}
-            >
-                📋
-            </button>
+  }, [service.comments]);
 
-                {service.flagged?null:<button
-                    onClick={() => flagService(service)}
-                    title="Flag Post"
-                    style={{
-                        position: "absolute",
-                        right: 0,
-                        top: "50%",
-                        transform: "translateY(-50%) translateX(-100%)",
-                        width: "24px",
-                        height: "24px",
-                        background: "none",
-                        border: "1px solid #aaa",
-                        borderRadius: "4px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        padding: 0,
-                        fontSize: "14px",
-                    }}
-                >
-                    🚩
-                </button>}
+  const handleAddComment = async () => {
+    if (comment.trim() === "") return;
+    const username = localStorage.getItem("username");
+    if (!username) {
+      alert("You must be logged in to comment.");
+      return;
+    }
+    try {
+      const response = await axios.post("http://localhost:3000/comment", {
+        postId: service.id,
+        username,
+        text: comment,
+      });
+      const newComment = response.data.comment;
+      setComments([...comments, newComment]);
+      setComment("");
+    } catch (err) {
+      console.error("Failed to submit comment:", err);
+      alert("Failed to add comment.");
+    }
+  };
+
+  async function flagService(s: Service) {
+    try {
+      await axios.post("http://localhost:3000/flag", { id: s.id });
+      setIsFlagged(true);
+    } catch (err) {
+      console.error("Failed to flag service:", err);
+    }
+  }
+
+  const handleUsernameClick = (clickedUsername: string) => {
+    navigate("/reviewuser", {
+      state: {
+        username: clickedUsername,
+        postId: service.id,
+      },
+    });
+  };
+
+  return (
+    <div className="service-card">
+      <div className="card-header">
+        <h3 style={{ color: service.ServiceType ? "green" : "red" }}>
+          {service.ServiceType ? "Service Post" : "Request Post"}
+        </h3>
+        <i className="username-label">
+          Posted by: <b onClick={() => handleUsernameClick(service.username)} className="clickable">{service.username}</b>
+        </i>
+        <button
+          onClick={() => navigator.clipboard.writeText(String(service.id))}
+          title="Copy Post ID"
+          className="icon-button copy"
+        >📋</button>
+        <button
+          onClick={() => !isFlagged && flagService(service)}
+          title={isFlagged ? "Already flagged" : "Flag Post"}
+          className="icon-button flag"
+          disabled={isFlagged}
+        >🚩</button>
+      </div>
+
+      {service.picture ? (
+        service.picture.startsWith("data:application") ? (
+          <img src={service.picture} alt="service" />
+        ) : (
+          <iframe
+            src={service.picture}
+            width="400"
+            height="500"
+            title="file-view"
+          />
+        )
+      ) : <p>No picture available</p>}
+
+      {service.groupId && <p><i>Group: {service.groupId}</i></p>}
+
+      {service.category?.length > 0 && (
+        <p><i>Categories: {service.category.join(", ")}</i></p>
+      )}
+
+      <p>{service.description}</p>
+      <p><i>Posted on: {new Date(service.timestamp).toLocaleString()}</i></p>
+
+      <div className="comments-section">
+        <h4>Comments</h4>
+        {comments.length > 0 ? (
+          comments.map((c, index) => (
+            <div key={index} className="comment">
+              <p><strong onClick={() => handleUsernameClick(c.username)} className="clickable">{c.username}</strong>: {c.text}</p>
+              <p className="timestamp">{new Date(c.timestamp).toLocaleString()}</p>
             </div>
+          ))
+        ) : (
+          <p>No comments yet.</p>
+        )}
+      </div>
 
-
-            {/* Display the picture if it exists */}
-            {service.picture ? (
-                service.picture.startsWith("data:application")
-                ? <img src={service.picture} alt="service" style={{ width: "600px" }} />
-                : <>
-                <iframe src={service.picture} width="400" height="500" title="file-view" />
-                {console.log('\n')}
-                </>
-            ) : (
-                // console.log(`${service.picture}`),
-                // console.log(`${service.user.id}`),
-                // console.log(`${service.user}`),
-                <p>No picture available</p>
-            )}
-
-            {/* TODO: This is broken: */}
-            {/* <i>Posted by: <b>{service.user.id}</b></i>  */} 
-            {service.groupId && <p><i>Group: {service.groupId}</i></p>}
-            {service.category && service.category.length > 0 && (
-                <p><i>Categories: {service.category.join(', ')}</i></p>
-            )}
-            <p>{service.description}</p>
-            <p><i>Posted on: {new Date(service.timestamp).toLocaleString()}</i></p> {/*'Posted on' label*/}
-
-            {/* Display the comments that have been posted to a post */}
-            {comments.map((c, index) => (
-                <div key={index} className="comment">
-                    <p>{c.text}</p>
-                    <p>{c.timestamp}</p>
-                </div>
-            ))}
-
-            {/* 'Add comment' button triggers the setComment function call */}
-            <textarea
-                placeholder="Add a comment..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-            />
-            <button onClick={handleAddComment}>Add Comment</button>
-        </div>
-    );
+      <textarea
+        placeholder="Add a comment..."
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+      />
+      <button onClick={handleAddComment}>Add Comment</button>
+    </div>
+  );
 }
 
 export default ServiceCard;

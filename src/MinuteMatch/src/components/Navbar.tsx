@@ -1,5 +1,5 @@
-// //import React from 'react';
-// import { Link, useLocation } from 'react-router-dom';
+// // export default Navbar;
+// import { Link, useLocation, useNavigate } from 'react-router-dom';
 // import './Navbar.css';
 
 // interface NavbarItem {
@@ -9,7 +9,8 @@
 
 // const Navbar = () => {
 //   const location = useLocation();
-//     // add in the other paths and services to our navbar
+//   const navigate = useNavigate();
+
 //   const navbarInfo: NavbarItem[] = [
 //     { route: '/', text: 'View' },
 //     { route: '/post-service', text: 'Post Service' },
@@ -18,6 +19,11 @@
 //     { route: '/groups', text: 'Groups' },
 //     { route: '/category', text: 'Category' },
 //   ];
+
+//   const handleLogout = () => {
+//     localStorage.clear(); // clear session
+//     navigate('/login');   // redirect to login
+//   };
 
 //   return (
 //     <nav className="navbar">
@@ -30,6 +36,10 @@
 //           {item.text}
 //         </Link>
 //       ))}
+
+//       <button className="navbar-item logout-button" onClick={handleLogout}>
+//         Logout
+//       </button>
 //     </nav>
 //   );
 // };
@@ -37,6 +47,7 @@
 // export default Navbar;
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Navbar.css';
+import { useState } from 'react';
 
 interface NavbarItem {
   route: string;
@@ -46,38 +57,49 @@ interface NavbarItem {
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
 
   const navbarInfo: NavbarItem[] = [
     { route: '/', text: 'View' },
-    { route: '/post-service', text: 'Post Service' },
-    { route: '/request', text: 'Request Service' },
-    { route: '/useraccount', text: 'User Account' },
     { route: '/groups', text: 'Groups' },
     { route: '/category', text: 'Category' },
+    { route: '/post-service', text: 'Post' },
+    //{ route: '/request', text: 'Request Service' }, // remove as not used at all
+    { route: '/useraccount', text: 'Profile' },
+    {route: '/reviewuser', text: 'Search User'}
   ];
 
   const handleLogout = () => {
-    localStorage.clear(); // clear session
-    navigate('/login');   // redirect to login
+    localStorage.clear();
+    navigate('/login');
   };
 
-  return (
-    <nav className="navbar">
-      {navbarInfo.map((item, index) => (
-        <Link
-          to={item.route}
-          className={location.pathname === item.route ? 'navbar-item-highlight' : 'navbar-item'}
-          key={index}
-        >
-          {item.text}
-        </Link>
-      ))}
+  const toggleMenu = () => setIsOpen(!isOpen);
 
-      {/* 🔐 Logout button */}
-      <button className="navbar-item logout-button" onClick={handleLogout}>
-        Logout
+  return (
+    <div className="navbar-container">
+      <button className="hamburger" onClick={toggleMenu}>
+        ☰
       </button>
-    </nav>
+
+      {isOpen && (
+        <div className="dropdown-menu">
+          {navbarInfo.map((item, index) => (
+            <Link
+              to={item.route}
+              className={location.pathname === item.route ? 'navbar-item-highlight' : 'navbar-item'}
+              key={index}
+              onClick={() => setIsOpen(false)}
+            >
+              {item.text}
+            </Link>
+          ))}
+          <button className="navbar-item logout-button" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 
