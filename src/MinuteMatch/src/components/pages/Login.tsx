@@ -76,7 +76,6 @@ export default function Login() {
       // Hash the combination of username + password
       const hash = await sha256Hash(username + password);
 
-
       const res = await fetch(`${API_URL}/user?username=${encodeURIComponent(username)}`);
       const user = await res.json();
       // console.log(user);
